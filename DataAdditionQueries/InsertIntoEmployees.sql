@@ -1,0 +1,10 @@
+insert into Employees (EmployeeID, UserID, Type, Name, Surname, Country, City, ZipCode, Street, Address) values (1, 1, 'Education', 'Orran', 'McKomb', 'Senegal', 'Tiadiaye', null, 'Troy', 'Apt 349');
+insert into Employees (EmployeeID, UserID, Type, Name, Surname, Country, City, ZipCode, Street, Address) values (2, 2, 'Education', 'Lane', 'Brambill', 'Costa Rica', 'Pocora', '70603', 'Forest Run', 'PO Box 27078');
+insert into Employees (EmployeeID, UserID, Type, Name, Surname, Country, City, ZipCode, Street, Address) values (3, 3, 'Education', 'Bryn', 'Mothersole', 'China', 'Dongsheng', null, 'Blaine', 'PO Box 15069');
+insert into Employees (EmployeeID, UserID, Type, Name, Surname, Country, City, ZipCode, Street, Address) values (4, 4, 'Education', 'Gawen', 'Durnan', 'Nicaragua', 'Telpaneca', null, 'Ronald Regan', 'Room 1033');
+insert into Employees (EmployeeID, UserID, Type, Name, Surname, Country, City, ZipCode, Street, Address) values (5, 5, 'Education', 'Pasquale', 'Archell', 'Gabon', 'Mayumba', null, 'Hoepker', 'Room 1295');
+insert into Employees (EmployeeID, UserID, Type, Name, Surname, Country, City, ZipCode, Street, Address) values (6, 6, 'Education', 'Chase', 'Jiracek', 'Peru', 'Iberia', null, 'Aberg', 'PO Box 77251');
+insert into Employees (EmployeeID, UserID, Type, Name, Surname, Country, City, ZipCode, Street, Address) values (7, 7, 'Education', 'Ardyth', 'Steere', 'France', 'Bastia', '20292 CEDEX', 'Arizona', 'PO Box 47739');
+insert into Employees (EmployeeID, UserID, Type, Name, Surname, Country, City, ZipCode, Street, Address) values (8, 8, 'Education', 'Alano', 'Borg', 'Guatemala', 'San Antonio Aguas Calientes', '03015', 'Cherokee', '18th Floor');
+insert into Employees (EmployeeID, UserID, Type, Name, Surname, Country, City, ZipCode, Street, Address) values (9, 9, 'Education', 'Josepha', 'Trevenu', 'Ukraine', 'Novohrad-Volyns’kyy', null, 'Thierer', 'Apt 696');
+insert into Employees (EmployeeID, UserID, Type, Name, Surname, Country, City, ZipCode, Street, Address) values (10, 10, 'Education', 'Inna', 'Ganders', 'Indonesia', 'Dalamdesa Kalapadua', null, 'Transport', 'Apt 1738');

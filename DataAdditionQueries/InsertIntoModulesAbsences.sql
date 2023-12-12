@@ -1,0 +1,10 @@
+insert into ModulesAbsences (ModuleAbsenceID, ModuleID, StudentID) values (1, 1, 1);
+insert into ModulesAbsences (ModuleAbsenceID, ModuleID, StudentID) values (2, 2, 2);
+insert into ModulesAbsences (ModuleAbsenceID, ModuleID, StudentID) values (3, 3, 3);
+insert into ModulesAbsences (ModuleAbsenceID, ModuleID, StudentID) values (4, 4, 4);
+insert into ModulesAbsences (ModuleAbsenceID, ModuleID, StudentID) values (5, 5, 5);
+insert into ModulesAbsences (ModuleAbsenceID, ModuleID, StudentID) values (6, 6, 6);
+insert into ModulesAbsences (ModuleAbsenceID, ModuleID, StudentID) values (7, 7, 7);
+insert into ModulesAbsences (ModuleAbsenceID, ModuleID, StudentID) values (8, 8, 8);
+insert into ModulesAbsences (ModuleAbsenceID, ModuleID, StudentID) values (9, 9, 9);
+insert into ModulesAbsences (ModuleAbsenceID, ModuleID, StudentID) values (10, 10, 10);

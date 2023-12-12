@@ -1,0 +1,10 @@
+insert into StudyMeetingsAbsences (StudyMeetingAbsenceID, StudyMeetingID, StudentID, HasBeenCaughtUp) values (1, 1, 1, 0);
+insert into StudyMeetingsAbsences (StudyMeetingAbsenceID, StudyMeetingID, StudentID, HasBeenCaughtUp) values (2, 2, 2, 0);
+insert into StudyMeetingsAbsences (StudyMeetingAbsenceID, StudyMeetingID, StudentID, HasBeenCaughtUp) values (3, 3, 3, 1);
+insert into StudyMeetingsAbsences (StudyMeetingAbsenceID, StudyMeetingID, StudentID, HasBeenCaughtUp) values (4, 4, 4, 1);
+insert into StudyMeetingsAbsences (StudyMeetingAbsenceID, StudyMeetingID, StudentID, HasBeenCaughtUp) values (5, 5, 5, 0);
+insert into StudyMeetingsAbsences (StudyMeetingAbsenceID, StudyMeetingID, StudentID, HasBeenCaughtUp) values (6, 6, 6, 1);
+insert into StudyMeetingsAbsences (StudyMeetingAbsenceID, StudyMeetingID, StudentID, HasBeenCaughtUp) values (7, 7, 7, 1);
+insert into StudyMeetingsAbsences (StudyMeetingAbsenceID, StudyMeetingID, StudentID, HasBeenCaughtUp) values (8, 8, 8, 0);
+insert into StudyMeetingsAbsences (StudyMeetingAbsenceID, StudyMeetingID, StudentID, HasBeenCaughtUp) values (9, 9, 9, 0);
+insert into StudyMeetingsAbsences (StudyMeetingAbsenceID, StudyMeetingID, StudentID, HasBeenCaughtUp) values (10, 10, 10, 0);

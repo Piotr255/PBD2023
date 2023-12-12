@@ -1,0 +1,6 @@
+- zmodyfikowaliśmy system nieobecności, dodaliśmy daty
+- dodaliśmy dane testowe
+- usunęliśmy expire date z OrderedWebinars
+- usunęliśmy dodatkowe tabele o informacjach o praktykach i przenieśliśmy te informacje do istniejących tabel
+- dodaliśmy opisy tabel
+- dodaliśmy tabele dla modułów

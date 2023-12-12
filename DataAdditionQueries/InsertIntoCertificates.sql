@@ -1,0 +1,15 @@
+insert into Certificates (CourseCertificateID, CourseID, StudentID, CertificateHyperlink) values (1, 1, 1, 'http:///faucibus/cursus/urna/ut/tellus/nulla/ut.jsp');
+insert into Certificates (CourseCertificateID, CourseID, StudentID, CertificateHyperlink) values (2, 2, 2, 'https:///felis/fusce/posuere.png');
+insert into Certificates (CourseCertificateID, CourseID, StudentID, CertificateHyperlink) values (3, 3, 3, 'https:///morbi/ut.aspx');
+insert into Certificates (CourseCertificateID, CourseID, StudentID, CertificateHyperlink) values (4, 4, 4, 'http:///nibh/in/hac/habitasse.jpg');
+insert into Certificates (CourseCertificateID, CourseID, StudentID, CertificateHyperlink) values (5, 5, 5, 'http:///ante/ipsum/primis.png');
+insert into Certificates (CourseCertificateID, CourseID, StudentID, CertificateHyperlink) values (6, 6, 6, 'http:///rutrum/rutrum/neque/aenean/auctor/gravida/sem.js');
+insert into Certificates (CourseCertificateID, CourseID, StudentID, CertificateHyperlink) values (7, 7, 7, 'https:///in/hac/habitasse.jsp');
+insert into Certificates (CourseCertificateID, CourseID, StudentID, CertificateHyperlink) values (8, 8, 8, 'https:///suspendisse/ornare/consequat/lectus/in/est.json');
+insert into Certificates (CourseCertificateID, CourseID, StudentID, CertificateHyperlink) values (9, 9, 9, 'https:///proin/risus/praesent/lectus/vestibulum/quam/sapien.jpg');
+insert into Certificates (CourseCertificateID, CourseID, StudentID, CertificateHyperlink) values (10, 10, 10, 'https:///neque/libero/convallis.jsp');
+insert into Certificates (CourseCertificateID, CourseID, StudentID, CertificateHyperlink) values (11, 11, 11, 'https:///in.png');
+insert into Certificates (CourseCertificateID, CourseID, StudentID, CertificateHyperlink) values (12, 12, 12, 'http:///fusce/congue/diam.xml');
+insert into Certificates (CourseCertificateID, CourseID, StudentID, CertificateHyperlink) values (13, 13, 13, 'http:///arcu/libero/rutrum/ac.json');
+insert into Certificates (CourseCertificateID, CourseID, StudentID, CertificateHyperlink) values (14, 14, 14, 'https:///in/felis.aspx');
+insert into Certificates (CourseCertificateID, CourseID, StudentID, CertificateHyperlink) values (15, 15, 15, 'https:///risus/semper/porta/volutpat.jpg');

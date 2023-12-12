@@ -1,4 +1,4 @@
-pbd_<14>_raport3 | Piotr Albiński, Adam Konior, Mateusz Maciaszczyk
+pbd_<14>_raport2 | Piotr Albiński, Adam Konior, Mateusz Maciaszczyk
 
 ## Identyfikacja użytkowników:
 - pracownik biura obsługi dydaktyki:
@@ -59,8 +59,8 @@ pbd_<14>_raport3 | Piotr Albiński, Adam Konior, Mateusz Maciaszczyk
   - weryfikowanie przekroczenia limitu miejsc: kursy hybrydowe i stacjonarne.
 
 
-<img src="DiagramZrzutEkranu5.png">
-<img src="DiagramZrzutEkranu6.png">
+<img src="DiagramZrzutEkranu3.png">
+<img src="DiagramZrzutEkranu4.png">
 
 Skrypty tworzenia tabel:
 Tabela Certificates:
@@ -270,11 +270,11 @@ GO
 Tabela OrderedWebinars:
 ```sql
 CREATE TABLE [dbo].[OrderedWebinars](
-	[OrderedWebinarID] [int] IDENTITY(1,1) NOT NULL,
+	[OrderedWebinarID] [int] NOT NULL,
 	[WebinarID] [int] NOT NULL,
 	[StudentID] [int] NOT NULL,
 	[OrderDate] [datetime] NOT NULL,
-	[DeliveryDate] [datetime] NOT NULL,
+	[ExpireDate] [datetime] NOT NULL,
 	[PaymentDeferral] [bit] NOT NULL,
 	[PaymentDeferralReason] [nvarchar](max) NULL,
  CONSTRAINT [PK_OrderedWebinars] PRIMARY KEY CLUSTERED 
@@ -352,14 +352,14 @@ GO
 Tabela StudyMeetings:
 ```sql
 CREATE TABLE [dbo].[StudyMeetings](
-	[StudyMeetingID] [int] IDENTITY(1,1) NOT NULL,
+	[StudyMeetingID] [int] NOT NULL,
 	[StudyID] [int] NOT NULL,
 	[Type] [nvarchar](50) NOT NULL,
 	[TeacherID] [int] NOT NULL,
 	[MeetingName] [nvarchar](50) NOT NULL,
 	[MeetingPrice] [money] NOT NULL,
 	[BeginningDate] [datetime] NOT NULL,
-	[Duration] [time](7) NULL,
+	[EndingDate] [datetime] NOT NULL,
 	[MeetingSyllabusDescription] [nvarchar](1000) NOT NULL,
 	[SeatCount] [int] NULL,
  CONSTRAINT [PK_StudyMeetings] PRIMARY KEY CLUSTERED 
@@ -461,160 +461,3 @@ GO
 ALTER TABLE [dbo].[Webinars] CHECK CONSTRAINT [FK_Webinars_Teachers]
 GO
 ```
-Wstawiliśmy do bazy dane testowe za pomocą generatora Mockaroo. Większość tabel(poza Employees i Teachers) ma 7-15 rekordów. Oto przykładowe operacje insert, które wykonaliśmy: 
-
-Do Courses:
-```sql
-insert into Courses (CourseID, Name, Price, Duration, MeetingCount, Limit, Language, TranslatorName, TranslatorSurname, Hyperlink) values (1, 'Andalax', 38.09, 14, 50, 144, 'Moldovan', 'Corrina', 'Carmont', 'https://cdbaby.com');
-insert into Courses (CourseID, Name, Price, Duration, MeetingCount, Limit, Language, TranslatorName, TranslatorSurname, Hyperlink) values (2, 'Tampflex', 20.6, 9, 32, 107, 'Nepali', 'Hedy', 'Paddock', 'http://uol.com.br');
-```
-Do Students:
-```sql
-insert into Students (StudentID, UserID, Country, City, ZipCode, Street, Address, PhoneNumber) values (1, 1, 'China', 'Xingnong', null, 'Corscot', 'PO Box 32827', '147-766-9836');
-insert into Students (StudentID, UserID, Country, City, ZipCode, Street, Address, PhoneNumber) values (2, 2, 'Netherlands', 'Enschede', '7514', 'Burning Wood', 'PO Box 54439', '347-181-7847');
-```
-Do StudyMeetingsAbsences:
-```sql
-insert into StudyMeetingsAbsences (StudyMeetingAbsenceID, StudyMeetingID, StudentID, HasBeenCaughtUp) values (1, 1, 1, 0);
-insert into StudyMeetingsAbsences (StudyMeetingAbsenceID, StudyMeetingID, StudentID, HasBeenCaughtUp) values (2, 2, 2, 0);
-```
-Do OrderedWebinars:
-```sql
-insert into OrderedWebinars (OrderedWebinarID, WebinarID, StudentID, OrderDate, ExpireDate, PaymentDeferral, PaymentDeferralReason) values (1, 1, 1, '11/3/2023', '6/25/2023', 1, 'Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam.');
-insert into OrderedWebinars (OrderedWebinarID, WebinarID, StudentID, OrderDate, ExpireDate, PaymentDeferral, PaymentDeferralReason) values (2, 2, 2, '12/13/2022', '5/25/2023', 0, null);
-```
-
-Opisy tabel:
-
-## Tabela Certificates:
-- Zawiera certifykaty dostępne przez hiperlink przypisywane studentom po ukończeniu określonego kursu
-
-## Tabela Courses:
-- CourseID, Name, Price, Duration, ModulesCount to odpowiednio identyfikator kursu, nazwa kursu, cena kursu, czas trwania kursu, liczba modułów.
-- Limit to maksymalna liczba uczestników, ponieważ kursy hybrydowe i stacjonarne mają właśnie limit miejsc. 
-- Language to język, w którym prowadzony jest kurs.
-- TranslatorName i TranslatorSurname to imię i nazwisko osoby na żywo tłumaczącej wykład na język polski.
-- Hyperlink to link do kursu, jeśli jest on prowadzony online.
- 
-## Tabela CoursesModules:
-- Zawiera identyfikator modułu, identyfikator kursu, identyfikator nauczyciela prowadzącego kurs, nazwę modułu, typ modułu, datę rozpoczęcia, datę zakończenia, limit miejsc, jeśli taki jest
-- Type(typ modułu) mówi, czy dany moduł jest stacjonary, online asynchroniczny, itp.
-- SeatCount to limit miejsc, jeśli kurs jest online, to SeatCount powinien być null.
-
-## Tabela Employees:
-- Identyfikator pracownika
-- Identyfikator użytkownika
-- Imię pracownika
-- Nazwisko pracownika
-- Kraj zamieszkania
-- Miejscowość
-- Kod pocztowy
-- Ulica
-- Adres
-
-## Tabela Students:
-- Tabela przechowuje informacje o studencie - jego numer identyfikacyjny, adres i numer telefonu
-- StudentID
-- UserID
-- Name
-- Surname
-- Country
-- City
-- ZipCode
-- Street
-- PhoneNumber
-
-## Tabela OrderedWebinars:
-- Tabela przechowuje informacje o zamówionych Webinarach. Przechowywujemy w niej identyfikator zamówienia, identyfikator webinaru, identyfikator kupującego studenta, datę zakupu, informację o odroczeniu płatności (typ bit 0/1) oraz ewentualne uzasadnienienie.
-- OrderedWebinarID
-- WebinarID
-- StudentID
-- OrderDate
-- PaymentDefferal
-- PaymentDeferralReason
-
-## Tabela OrderedStudyMeetings
-- Tabela przechowuje zakupiony dostęp przez studentów na spotkania na studiach. Tabela zawiera identyfikator zamówienia, identyfikator studiów, identyfikator spotkania, datę zamówienia.
-- OrderedStudyMeetingID
-- StudentID
-- StudyMeetingID
-- OrderDate
-
-
-
-## Tabela OrderedStudies
-- Tabela przechowuje zakupione przez studentów studia. Tabela zawiera identyfikator zamówienia, identyfikator studiów, identyfikator studenta, datę zamówienia, informację o odroczeniu płatności (typ bit 0/1) oraz ewentualne uzasadnienienie, pole informujące o niezaliczeniu studiów
-- OrderedStudyID
-- StudyID
-- StudentID
-- OrderDate
-- PaymentDeferral
-- PaymentDeferralReason
-- FailedInternship
-
-## Tabela OrderedCourses 
-- Tabela przechowuje informacje o złożonych zamówieniach kursów przez studentów. Tabela zawiera pola identyfikatora zamówienia kursu, identyfikator kursu, identyfikator studenta, datę zamówienia, datę rozpoczęcia kursu, ile danemu studentowi pozostało do zapłaty (po zapłaceniu zaliczki),  informację o odroczeniu płatności (typ bit 0/1) oraz ewentualne uzasadnienienie.
-- OrderedCourseID
-- CourseID
-- StudentID
-- OrderDate
-- StartDate
-- LeftPayment
-- PaymentDeferral
-- PaymentDeferralReason
-
-## Tabela ModulesAbsences
-- Tabela przechowuje nieobecności studentów na modułach. Tabela zawiera identyfikator absencji, identyfikator modułu, identyfikator studenta.
-- ModuleAbsenceID
-- ModuleID
-- StudentID
-
-## Tabela Webinars:
-- WebinarID identyfikator webinaru
-- TeacherID identyfikator nauczyciela prowadzącego webinar
-- Name nazwa webinaru
-- Price cena webinaru
-- Hyperlink link do webinaru
-- Language język, w którym jest prowadzony webinar
-- TranslatorName, TranslatorSurname imię i nazwisko tłumacza
-
-## Tabela Users:
-- Userid identyfikator użytkownika
-- Email, Password - email i hasło użytkownika
-
-## Tabela Teachers:
-- TeacherID - identyfikator nauczyciela
-- Name, Surname - imię i nazwisko nauczyciela
-- Country, City, ZipCode, Street, Address - dane kontaktowe
-
-## Tabela StudyMeetings: 
-- StudyMeetingID identyfikator zajęć
-- Type typ zajęć(stacjonarne, online...)
-- teacherID identyfikator nauczyciela prowadzącego zajęcia
-- MeetingName nazwa spotkania
-- MeetingPrice cena spotkania jeżeli chce je kupić ktoś kto nie jest zapisany na studia
-- BeginingDate, EndingDate data i czas rozpoczęcia i zakończenia zajęć
-- MeetingSyllabusDescription opis zajęć(syllabus)
-- SeatCount ilość wolnych miejsc(kiedy ktoś z poza studiów chce kupić miejsce to wiemy ile ich jest)
-
-## Tabela StudyMeetingsAbsence:
-- StudyMeetingsAbsence identyfikator nieobecności
-- StudyMeetingID identyfikator zajęć
-- StudentID identyfikator studenta
-- HasBeenCaughtUp czy ta nieobecność została nadrobiona
-
-## Tabela Studies:
-- StudyID identyfikator studiów
-- FieldOfStudy nazwa studiów
-- Duration czas trwania studiów(ilość semestrów)
-- Price koszt studiow
-- StudySyllabusID klucz obcy do tabeli ze studymeetings
-- EntryFee opłata początkowa za studia
-- AcademicYear rok zaczęcia studiów
-- Limit limit  miejsc możliwych do przyjęcia studentów
-- MeetingCount ilość wszystkich spotkań w ramach studiów
-- Language język sudiów
-- Translator czy jest tłumacz
-- SyllabusDescription opis studiów
-- InternshipName nazwa praktyk
-- InternshipStartDate data rozpoczęcia praktyk

@@ -1,0 +1,10 @@
+insert into Webinars (WebinarID, TeacherID, Name, Price, Hyperlink, Language, TranslatorName, TranslatorSurname) values (1, 1, 'Sheba', 52.05, 'https://amazon.de', 'Haitian Creole', 'Hillyer', 'Housecraft');
+insert into Webinars (WebinarID, TeacherID, Name, Price, Hyperlink, Language, TranslatorName, TranslatorSurname) values (2, 2, 'Pepi', 130.2, 'http://ehow.com', 'Chinese', 'Loni', 'Chidzoy');
+insert into Webinars (WebinarID, TeacherID, Name, Price, Hyperlink, Language, TranslatorName, TranslatorSurname) values (3, 3, 'Rhetta', 89.88, 'http://utexas.edu', 'Latvian', 'Millard', 'Medland');
+insert into Webinars (WebinarID, TeacherID, Name, Price, Hyperlink, Language, TranslatorName, TranslatorSurname) values (4, 4, 'Thorny', 132.0, 'https://prlog.org', 'Lithuanian', 'Aldin', 'Crossthwaite');
+insert into Webinars (WebinarID, TeacherID, Name, Price, Hyperlink, Language, TranslatorName, TranslatorSurname) values (5, 5, 'Flore', 138.53, 'http://ycombinator.com', 'Bislama', 'Yves', 'Iredell');
+insert into Webinars (WebinarID, TeacherID, Name, Price, Hyperlink, Language, TranslatorName, TranslatorSurname) values (6, 6, 'Lucien', 41.51, 'http://naver.com', 'Portuguese', 'Skippie', 'MacNeil');
+insert into Webinars (WebinarID, TeacherID, Name, Price, Hyperlink, Language, TranslatorName, TranslatorSurname) values (7, 7, 'Daryl', 60.76, 'http://jigsy.com', 'Somali', 'Dorella', 'Elijah');
+insert into Webinars (WebinarID, TeacherID, Name, Price, Hyperlink, Language, TranslatorName, TranslatorSurname) values (8, 8, 'Birgit', 108.41, 'https://intel.com', 'Polish', 'Aubrey', 'Eburne');
+insert into Webinars (WebinarID, TeacherID, Name, Price, Hyperlink, Language, TranslatorName, TranslatorSurname) values (9, 9, 'Terrye', 133.72, 'https://cafepress.com', 'Norwegian', 'Fanechka', 'Clingan');
+insert into Webinars (WebinarID, TeacherID, Name, Price, Hyperlink, Language, TranslatorName, TranslatorSurname) values (10, 10, 'Minda', 39.0, 'https://t.co', 'Malagasy', 'Ertha', 'Dillet');

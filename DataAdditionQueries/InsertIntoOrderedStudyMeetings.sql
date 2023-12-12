@@ -1,0 +1,10 @@
+insert into OrderedStudyMeetings (OrderedStudyMeetingID, StudentID, StudyMeetingID, OrderDate) values (1, 1, 1, '9/23/2023');
+insert into OrderedStudyMeetings (OrderedStudyMeetingID, StudentID, StudyMeetingID, OrderDate) values (2, 2, 2, '1/23/2023');
+insert into OrderedStudyMeetings (OrderedStudyMeetingID, StudentID, StudyMeetingID, OrderDate) values (3, 3, 3, '7/12/2023');
+insert into OrderedStudyMeetings (OrderedStudyMeetingID, StudentID, StudyMeetingID, OrderDate) values (4, 4, 4, '10/28/2023');
+insert into OrderedStudyMeetings (OrderedStudyMeetingID, StudentID, StudyMeetingID, OrderDate) values (5, 5, 5, '10/2/2023');
+insert into OrderedStudyMeetings (OrderedStudyMeetingID, StudentID, StudyMeetingID, OrderDate) values (6, 6, 6, '9/8/2023');
+insert into OrderedStudyMeetings (OrderedStudyMeetingID, StudentID, StudyMeetingID, OrderDate) values (7, 7, 7, '8/4/2023');
+insert into OrderedStudyMeetings (OrderedStudyMeetingID, StudentID, StudyMeetingID, OrderDate) values (8, 8, 8, '6/4/2023');
+insert into OrderedStudyMeetings (OrderedStudyMeetingID, StudentID, StudyMeetingID, OrderDate) values (9, 9, 9, '3/28/2023');
+insert into OrderedStudyMeetings (OrderedStudyMeetingID, StudentID, StudyMeetingID, OrderDate) values (10, 10, 10, '11/20/2023');

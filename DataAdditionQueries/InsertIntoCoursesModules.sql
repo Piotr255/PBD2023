@@ -1,0 +1,15 @@
+insert into CoursesModules (ModuleID, TeacherID, CourseID, ModuleName, Type, BeginningDate, EndingDate, SeatCount) values (1, 1, 1, 'Fixflex', 'Online Asynchroniczny', '12/7/2022', '10/10/2023', 111);
+insert into CoursesModules (ModuleID, TeacherID, CourseID, ModuleName, Type, BeginningDate, EndingDate, SeatCount) values (2, 2, 2, 'Greenlam', 'Online Synchroniczny', '10/5/2022', '11/20/2023', 141);
+insert into CoursesModules (ModuleID, TeacherID, CourseID, ModuleName, Type, BeginningDate, EndingDate, SeatCount) values (3, 3, 3, 'Overhold', 'Online Synchroniczny', '2/22/2023', '10/22/2023', 129);
+insert into CoursesModules (ModuleID, TeacherID, CourseID, ModuleName, Type, BeginningDate, EndingDate, SeatCount) values (4, 4, 4, 'Stim', 'Hybrydowy', '1/21/2023', '11/7/2023', 148);
+insert into CoursesModules (ModuleID, TeacherID, CourseID, ModuleName, Type, BeginningDate, EndingDate, SeatCount) values (5, 5, 5, 'Biodex', 'Stacjonarny', '9/16/2022', '11/8/2023', 109);
+insert into CoursesModules (ModuleID, TeacherID, CourseID, ModuleName, Type, BeginningDate, EndingDate, SeatCount) values (6, 6, 6, 'Alpha', 'Online Synchroniczny', '1/8/2023', '11/17/2023', 101);
+insert into CoursesModules (ModuleID, TeacherID, CourseID, ModuleName, Type, BeginningDate, EndingDate, SeatCount) values (7, 7, 7, 'Sub-Ex', 'Hybrydowy', '2/11/2023', '11/12/2023', 125);
+insert into CoursesModules (ModuleID, TeacherID, CourseID, ModuleName, Type, BeginningDate, EndingDate, SeatCount) values (8, 8, 8, 'Temp', 'Hybrydowy', '2/4/2023', '9/4/2023', 115);
+insert into CoursesModules (ModuleID, TeacherID, CourseID, ModuleName, Type, BeginningDate, EndingDate, SeatCount) values (9, 9, 9, 'Alpha', 'Hybrydowy', '12/18/2022', '10/14/2023', 138);
+insert into CoursesModules (ModuleID, TeacherID, CourseID, ModuleName, Type, BeginningDate, EndingDate, SeatCount) values (10, 10, 10, 'Wrapsafe', 'Online Synchroniczny', '10/5/2022', '1/20/2024', 131);
+insert into CoursesModules (ModuleID, TeacherID, CourseID, ModuleName, Type, BeginningDate, EndingDate, SeatCount) values (11, 11, 11, 'Fixflex', 'Online Synchroniczny', '9/9/2022', '12/24/2023', 123);
+insert into CoursesModules (ModuleID, TeacherID, CourseID, ModuleName, Type, BeginningDate, EndingDate, SeatCount) values (12, 12, 12, 'Rank', 'Stacjonarny', '12/5/2022', '9/28/2023', 100);
+insert into CoursesModules (ModuleID, TeacherID, CourseID, ModuleName, Type, BeginningDate, EndingDate, SeatCount) values (13, 13, 13, 'Biodex', 'Online Asynchroniczny', '12/22/2022', '10/29/2023', 106);
+insert into CoursesModules (ModuleID, TeacherID, CourseID, ModuleName, Type, BeginningDate, EndingDate, SeatCount) values (14, 14, 14, 'Regrant', 'Online Asynchroniczny', '1/4/2023', '4/12/2024', 138);
+insert into CoursesModules (ModuleID, TeacherID, CourseID, ModuleName, Type, BeginningDate, EndingDate, SeatCount) values (15, 15, 15, 'Flowdesk', 'Stacjonarny', '1/17/2023', '10/26/2023', 135);
