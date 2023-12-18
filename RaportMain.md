@@ -980,7 +980,7 @@ AND (dbo.Orders.Status = 'Delivered')
 ```
 
 
-##Raport DłużnikówWebinars
+## Raport DłużnikówWebinars
 
 ```sql
 SELECT dbo.OrderedWebinars.LeftPayment, GETDATE() AS CurrentDate, dbo.Webinars.StartDate,
