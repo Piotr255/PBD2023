@@ -61,96 +61,12 @@ pbd_<14>_raport4 | Piotr Albiński, Adam Konior, Mateusz Maciaszczyk
 
 <img src="ScreenShot bazy raport 4.png">
 
-## Opisy tabel:
-
-## Tabela Countries:
-lista wszystkich państw
-
-## Tabela City
-lista wszystkich miast
-
-## Tabela CountryCity
-tabela która łączy kraje z miastami, używamy do walidacji czy dane miasto znajduje się w danym państwie
-
-## Tabela Users:
-tabela, w której znajdują się wszyscy użytkownicy i ich dane
-
-## Tabela Employees:
-tabela zawiera osoby, które są pracownikami
-type określa czy jest to pracownik biura czy dyrektor
-
-## Tabela Students:
-tabela zawiera wszystkie osoby, które są uczniami/wykupiły jakiś kurs/webinar
-
-## Tabela Teachers:
-tabela zawiera wszystkie osoby, które są nauczycielami
-
-## Tabela Webinars:
-tabela zawiera informacje na temat wszystkich webinarów
-hyperlink: link do webinaru
-language: język, w którym są prowadzone webinary
-translatorName, translatorSurname: imię i nazwisko translatora
-
-## Tabela Courses:
-tabela zawiera informacje na temat wszystkich kursów
-duration: czas trwania kursu
-modulesCount: liczba modułów, z których składa się kurs
-limit: ile osób może maksymalnie uczestniczyć w kursie
-
-
-
-## Tabela CoursesModules:
-tabela zawiera informacje na temat modułów, z których składa się kurs(courseID identyfikator kursu, w którym zawiera się dany moduł)
-type: typ modułu np. stacjonarne, online…
-BeginningDate, EndingDate: data rozpoczęcia i zakończenia kursu
-
-## Tabela ModulesAbsences:
-tabela zawiera informacje, który student nie był na którym module z kursów
-
-## Tabela Studies:
-tabela zawiera informacje na temat wszystkich studiów
-duration: ile semestrów trwają studia
-entryFee: opłata rekrutacyjna
-SyllabusDescription: opis toku studiów 
-
-## Tabela StudyMeetings:
-tabela zawiera informacje na temat wszystkich spotkań w ramach studiów
-type: typ spotkania np. stacjonarne, zdalne, hybrydowe
-MeetingPrice, MeetingPriceForStudents: cena za pojedyncze spotkanie dla osoby spoza studiów oraz dla osoby zapisanej już na studia
-
-## Tabela StudyMeetingsAbsences
-tabela zawiera informacje, który student nie był na którym spotkaniu ze studiów
-HasBeenCaughtUp: informacja czy odrobił tę nieobecność
-
-## Tabela Orders:
-tabela pełni rolę koszyka, zapisuje dane, który student co ma w koszyku oraz kiedy to zamówił
-status: informacja czy produkt jest w koszyku, czy płatność jest przetwarzana oraz czy produkt już jest zamówiony
-
-## Tabela OrderedWebinars:
-tabela zawiera informacje na temat zamówionych webinariów 
-OrderID: klucz obcy, który wskazuje na tabele Orders, do którego zamówienia należy dany webinar
-LeftPayment: ile zostało do zapłacenia
-PickupDate: okres, na który został zakupiony webinar
-PaymentDeferral, PaymentDeferralReasson: czy płatność została odroczona oraz powód
-
-## Tabela OrderedCourses:
-tabela zawiera informacje na temat zamówionych kursów
-IsGrantedCertificate: czy został przyznany certyfikat
-CertificateHyperlink: link do certyfikatu
-
-## Tabela OrderedStudies:
-tabela zawiera informacje na temat zamówionych studiów
-FailedInternship: czy praktyki zostały zaliczone
-EntryFeePaid: czy opłata rekrutacyjna została opłacona
-
-## Tabela OrderedStudyMeetings:
-tabela zawiera informacje na temat zamówionych pojedynczych spotkań z toku studiów
-IsPartOfStudies: czy osoba która zamówiła spotkanie bierze udział w studiach
-LeftPayment: ile zostało do zapłacenia
-
 ## Skrypty tworzenia tabel:
 
 ## Tabela City: 
+
+lista wszystkich miast
+
 ```sql
 CREATE TABLE [dbo].[City](
 	[CityID] [int] IDENTITY(1,1) NOT NULL,
@@ -172,6 +88,9 @@ GO
 ```
 
 ## Tabela Countries:
+
+lista wszystkich państw
+
 ```sql
 CREATE TABLE [dbo].[Countries](
 	[CountryID] [int] IDENTITY(1,1) NOT NULL,
@@ -191,6 +110,9 @@ GO
 ```
 
 ## Tabela CountryCity:
+
+tabela która łączy kraje z miastami, używamy do walidacji czy dane miasto znajduje się w danym państwie
+
 ```sql
 CREATE TABLE [dbo].[CountryCity](
 	[CountryID] [int] NOT NULL,
@@ -219,6 +141,12 @@ GO
 ```
 
 ## Tabela Courses:
+
+tabela zawiera informacje na temat wszystkich kursów
+duration: czas trwania kursu
+modulesCount: liczba modułów, z których składa się kurs
+limit: ile osób może maksymalnie uczestniczyć w kursie
+
 ```sql
 CREATE TABLE [dbo].[Courses](
 	[CourseID] [int] IDENTITY(1,1) NOT NULL,
@@ -277,6 +205,11 @@ GO
 ```
 
 ## Tabela CoursesModules:
+
+tabela zawiera informacje na temat modułów, z których składa się kurs(courseID identyfikator kursu, w którym zawiera się dany moduł)
+type: typ modułu np. stacjonarne, online…
+BeginningDate, EndingDate: data rozpoczęcia i zakończenia kursu
+
 ```sql
 CREATE TABLE [dbo].[CoursesModules](
 	[ModuleID] [int] IDENTITY(1,1) NOT NULL,
@@ -328,6 +261,10 @@ GO
 ```
 
 ## Tabela Employees:
+
+tabela zawiera osoby, które są pracownikami
+type określa czy jest to pracownik biura czy dyrektor
+
 ```sql
 CREATE TABLE [dbo].[Employees](
 	[EmployeeID] [int] NOT NULL,
@@ -354,6 +291,9 @@ GO
 ```
 
 ## Tabela ModulesAbsences:
+
+tabela zawiera informacje, który student nie był na którym module z kursów
+
 ```sql
 CREATE TABLE [dbo].[ModulesAbsences](
 	[ModuleID] [int] NOT NULL,
@@ -382,6 +322,11 @@ GO
 ```
 
 ## Tabela OrderedCourses:
+
+tabela zawiera informacje na temat zamówionych kursów
+IsGrantedCertificate: czy został przyznany certyfikat
+CertificateHyperlink: link do certyfikatu
+
 ```sql
 CREATE TABLE [dbo].[OrderedCourses](
 	[OrderID] [nvarchar](50) NOT NULL,
@@ -436,6 +381,11 @@ GO
 ```
 
 ## Tabela OrderedStudies:
+
+tabela zawiera informacje na temat zamówionych studiów
+FailedInternship: czy praktyki zostały zaliczone
+EntryFeePaid: czy opłata rekrutacyjna została opłacona
+
 ```sql
 CREATE TABLE [dbo].[OrderedStudies](
 	[OrderID] [nvarchar](50) NOT NULL,
@@ -485,6 +435,11 @@ GO
 ```
 
 ## Tabela OrderedStudyMeetings:
+
+tabela zawiera informacje na temat zamówionych pojedynczych spotkań z toku studiów
+IsPartOfStudies: czy osoba która zamówiła spotkanie bierze udział w studiach
+LeftPayment: ile zostało do zapłacenia
+
 ```sql
 CREATE TABLE [dbo].[OrderedStudyMeetings](
 	[OrderID] [nvarchar](50) NOT NULL,
@@ -523,6 +478,13 @@ GO
 ```
 
 ## Tabela OrderedWebinars:
+
+tabela zawiera informacje na temat zamówionych webinariów 
+OrderID: klucz obcy, który wskazuje na tabele Orders, do którego zamówienia należy dany webinar
+LeftPayment: ile zostało do zapłacenia
+PickupDate: okres, na który został zakupiony webinar
+PaymentDeferral, PaymentDeferralReasson: czy płatność została odroczona oraz powód
+
 ```sql
 CREATE TABLE [dbo].[OrderedWebinars](
 	[OrderID] [nvarchar](50) NOT NULL,
@@ -567,6 +529,10 @@ GO
 ```
 
 ## Tabela Orders:
+
+tabela pełni rolę koszyka, zapisuje dane, który student co ma w koszyku oraz kiedy to zamówił
+status: informacja czy produkt jest w koszyku, czy płatność jest przetwarzana oraz czy produkt już jest zamówiony
+
 ```sql
 CREATE TABLE [dbo].[Orders](
 	[OrderID] [nvarchar](50) NOT NULL,
@@ -588,6 +554,9 @@ GO
 ```
 
 ## Tabela Students:
+
+tabela zawiera wszystkie osoby, które są uczniami/wykupiły jakiś kurs/webinar
+
 ```sql
 CREATE TABLE [dbo].[Students](
 	[StudentID] [int] NOT NULL,
@@ -607,6 +576,12 @@ GO
 ```
 
 ## Tabela Studies:
+
+tabela zawiera informacje na temat wszystkich studiów
+duration: ile semestrów trwają studia
+entryFee: opłata rekrutacyjna
+SyllabusDescription: opis toku studiów 
+
 ```sql
 CREATE TABLE [dbo].[Studies](
 	[StudyID] [int] IDENTITY(1,1) NOT NULL,
@@ -664,6 +639,11 @@ GO
 ```
 
 ## Tabela StudyMeetings:
+
+tabela zawiera informacje na temat wszystkich spotkań w ramach studiów
+type: typ spotkania np. stacjonarne, zdalne, hybrydowe
+MeetingPrice, MeetingPriceForStudents: cena za pojedyncze spotkanie dla osoby spoza studiów oraz dla osoby zapisanej już na studia
+
 ```sql
 CREATE TABLE [dbo].[StudyMeetings](
 	[StudyMeetingID] [int] IDENTITY(1,1) NOT NULL,
@@ -731,6 +711,10 @@ GO
 ```
 
 ## Tabela StudyMeetingsAbsences:
+
+tabela zawiera informacje, który student nie był na którym spotkaniu ze studiów
+HasBeenCaughtUp: informacja czy odrobił tę nieobecność
+
 ```sql
 CREATE TABLE [dbo].[StudyMeetingsAbsences](
 	[StudyMeetingID] [int] NOT NULL,
@@ -760,6 +744,9 @@ GO
 ```
 
 ## Tabela Teachers:
+
+tabela zawiera wszystkie osoby, które są nauczycielami
+
 ```sql
 CREATE TABLE [dbo].[Teachers](
 	[TeacherID] [int] NOT NULL,
@@ -779,6 +766,9 @@ GO
 ```
 
 ## Tabela Users:
+
+tabela, w której znajdują się wszyscy użytkownicy i ich dane
+
 ```sql
 CREATE TABLE [dbo].[Users](
 	[UserID] [int] IDENTITY(1,1) NOT NULL,
@@ -820,6 +810,12 @@ GO
 ```
 
 ## Tabela Webinars:
+
+tabela zawiera informacje na temat wszystkich webinarów
+hyperlink: link do webinaru
+language: język, w którym są prowadzone webinary
+translatorName, translatorSurname: imię i nazwisko translatora
+
 ```sql
 CREATE TABLE [dbo].[Webinars](
 	[WebinarID] [int] IDENTITY(1,1) NOT NULL,
