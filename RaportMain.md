@@ -63,35 +63,84 @@ pbd_<14>_raport3 | Piotr Albiński, Adam Konior, Mateusz Maciaszczyk
 <img src="DiagramZrzutEkranu6.png">
 
 Skrypty tworzenia tabel:
-Tabela Certificates:
+
+Tabela City: 
 ```sql
-CREATE TABLE [dbo].[Certificates](
-	[CourseCertificateID] [int] NOT NULL,
-	[CourseID] [int] NOT NULL,
-	[StudentID] [int] NOT NULL,
-	[CertificateHyperlink] [nvarchar](100) NOT NULL,
- CONSTRAINT [PK_Certificates] PRIMARY KEY CLUSTERED 
+CREATE TABLE [dbo].[City](
+	[CityID] [int] IDENTITY(1,1) NOT NULL,
+	[CityName] [nvarchar](50) NOT NULL,
+	[CountryID] [int] NOT NULL,
+ CONSTRAINT [PK_City] PRIMARY KEY CLUSTERED 
 (
-	[CourseCertificateID] ASC
+	[CityID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
 
-ALTER TABLE [dbo].[Certificates]  WITH CHECK ADD  CONSTRAINT [FK_Certificates_Courses] FOREIGN KEY([CourseID])
-REFERENCES [dbo].[Courses] ([CourseID])
+ALTER TABLE [dbo].[City]  WITH CHECK ADD  CONSTRAINT [FK_City_Countries] FOREIGN KEY([CountryID])
+REFERENCES [dbo].[Countries] ([CountryID])
 GO
 
-ALTER TABLE [dbo].[Certificates] CHECK CONSTRAINT [FK_Certificates_Courses]
+ALTER TABLE [dbo].[City] CHECK CONSTRAINT [FK_City_Countries]
 GO
 ```
+
+Tabela Countries:
+```sql
+CREATE TABLE [dbo].[Countries](
+	[CountryID] [int] IDENTITY(1,1) NOT NULL,
+	[CountryName] [nchar](50) NOT NULL,
+ CONSTRAINT [PK_Countries] PRIMARY KEY CLUSTERED 
+(
+	[CountryID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Countries]  WITH CHECK ADD  CONSTRAINT [NotEmptyCountryName] CHECK  (([CountryName]<>''))
+GO
+
+ALTER TABLE [dbo].[Countries] CHECK CONSTRAINT [NotEmptyCountryName]
+GO
+```
+
+Tabela CountryCity:
+```sql
+CREATE TABLE [dbo].[CountryCity](
+	[CountryID] [int] NOT NULL,
+	[CityID] [int] NOT NULL,
+ CONSTRAINT [PK_CountryCity] PRIMARY KEY CLUSTERED 
+(
+	[CountryID] ASC,
+	[CityID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[CountryCity]  WITH CHECK ADD  CONSTRAINT [FK_CountryCity_City] FOREIGN KEY([CityID])
+REFERENCES [dbo].[City] ([CityID])
+GO
+
+ALTER TABLE [dbo].[CountryCity] CHECK CONSTRAINT [FK_CountryCity_City]
+GO
+
+ALTER TABLE [dbo].[CountryCity]  WITH CHECK ADD  CONSTRAINT [FK_CountryCity_Countries] FOREIGN KEY([CountryID])
+REFERENCES [dbo].[Countries] ([CountryID])
+GO
+
+ALTER TABLE [dbo].[CountryCity] CHECK CONSTRAINT [FK_CountryCity_Countries]
+GO
+```
+
 Tabela Courses:
 ```sql
 CREATE TABLE [dbo].[Courses](
-	[CourseID] [int] NOT NULL,
+	[CourseID] [int] IDENTITY(1,1) NOT NULL,
 	[Name] [nvarchar](50) NOT NULL,
 	[Price] [money] NOT NULL,
+	[StartDate] [datetime] NOT NULL,
 	[Duration] [int] NOT NULL,
-	[MeetingCount] [int] NOT NULL,
+	[ModulesCount] [int] NOT NULL,
 	[Limit] [int] NOT NULL,
 	[Language] [nvarchar](50) NOT NULL,
 	[TranslatorName] [nvarchar](50) NULL,
@@ -103,13 +152,50 @@ CREATE TABLE [dbo].[Courses](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+
+ALTER TABLE [dbo].[Courses]  WITH CHECK ADD  CONSTRAINT [C_TranslatorName] CHECK  (([TranslatorName]<>'' AND [TranslatorSurname]<>''))
+GO
+
+ALTER TABLE [dbo].[Courses] CHECK CONSTRAINT [C_TranslatorName]
+GO
+
+ALTER TABLE [dbo].[Courses]  WITH CHECK ADD  CONSTRAINT [Duration] CHECK  (([Duration]>(0)))
+GO
+
+ALTER TABLE [dbo].[Courses] CHECK CONSTRAINT [Duration]
+GO
+
+ALTER TABLE [dbo].[Courses]  WITH CHECK ADD  CONSTRAINT [Limit] CHECK  (([Limit]>(0)))
+GO
+
+ALTER TABLE [dbo].[Courses] CHECK CONSTRAINT [Limit]
+GO
+
+ALTER TABLE [dbo].[Courses]  WITH CHECK ADD  CONSTRAINT [ModulesCount] CHECK  (([ModulesCount]>(0)))
+GO
+
+ALTER TABLE [dbo].[Courses] CHECK CONSTRAINT [ModulesCount]
+GO
+
+ALTER TABLE [dbo].[Courses]  WITH CHECK ADD  CONSTRAINT [Name] CHECK  (([Name]<>''))
+GO
+
+ALTER TABLE [dbo].[Courses] CHECK CONSTRAINT [Name]
+GO
+
+ALTER TABLE [dbo].[Courses]  WITH CHECK ADD  CONSTRAINT [Price] CHECK  (([Price]>(0)))
+GO
+
+ALTER TABLE [dbo].[Courses] CHECK CONSTRAINT [Price]
+GO
 ```
+
 Tabela CoursesModules:
 ```sql
 CREATE TABLE [dbo].[CoursesModules](
-	[ModuleID] [int] NOT NULL,
-	[TeacherID] [int] NOT NULL,
+	[ModuleID] [int] IDENTITY(1,1) NOT NULL,
 	[CourseID] [int] NOT NULL,
+	[TeacherID] [int] NOT NULL,
 	[ModuleName] [nvarchar](50) NOT NULL,
 	[Type] [nvarchar](50) NOT NULL,
 	[BeginningDate] [datetime] NOT NULL,
@@ -128,20 +214,38 @@ GO
 
 ALTER TABLE [dbo].[CoursesModules] CHECK CONSTRAINT [FK_CoursesModules_Courses]
 GO
+
+ALTER TABLE [dbo].[CoursesModules]  WITH CHECK ADD  CONSTRAINT [FK_CoursesModules_Teachers] FOREIGN KEY([TeacherID])
+REFERENCES [dbo].[Teachers] ([TeacherID])
+GO
+
+ALTER TABLE [dbo].[CoursesModules] CHECK CONSTRAINT [FK_CoursesModules_Teachers]
+GO
+
+ALTER TABLE [dbo].[CoursesModules]  WITH CHECK ADD  CONSTRAINT [Dates] CHECK  (([BeginningDate]<[EndingDate]))
+GO
+
+ALTER TABLE [dbo].[CoursesModules] CHECK CONSTRAINT [Dates]
+GO
+
+ALTER TABLE [dbo].[CoursesModules]  WITH CHECK ADD  CONSTRAINT [SeatCount] CHECK  (([SeatCount]>(0)))
+GO
+
+ALTER TABLE [dbo].[CoursesModules] CHECK CONSTRAINT [SeatCount]
+GO
+
+ALTER TABLE [dbo].[CoursesModules]  WITH CHECK ADD  CONSTRAINT [Type] CHECK  (([Type]='Online Asynchroniczny' OR [Type]='Online Synchroniczny' OR [Type]='Stacjonarny' OR [Type]='Hybrydowy'))
+GO
+
+ALTER TABLE [dbo].[CoursesModules] CHECK CONSTRAINT [Type]
+GO
 ```
+
 Tabela Employees:
 ```sql
 CREATE TABLE [dbo].[Employees](
-	[EmployeeID] [int] IDENTITY(1,1) NOT NULL,
-	[UserID] [int] NOT NULL,
+	[EmployeeID] [int] NOT NULL,
 	[Type] [nvarchar](50) NOT NULL,
-	[Name] [nvarchar](50) NOT NULL,
-	[Surname] [nvarchar](50) NOT NULL,
-	[Country] [nvarchar](50) NOT NULL,
-	[City] [nvarchar](50) NOT NULL,
-	[ZipCode] [nvarchar](50) NULL,
-	[Street] [nvarchar](50) NOT NULL,
-	[Address] [nvarchar](50) NOT NULL,
  CONSTRAINT [PK_Employees] PRIMARY KEY CLUSTERED 
 (
 	[EmployeeID] ASC
@@ -149,22 +253,29 @@ CREATE TABLE [dbo].[Employees](
 ) ON [PRIMARY]
 GO
 
-ALTER TABLE [dbo].[Employees]  WITH CHECK ADD  CONSTRAINT [FK_Employees_Users] FOREIGN KEY([UserID])
+ALTER TABLE [dbo].[Employees]  WITH CHECK ADD  CONSTRAINT [FK_Employees_Users] FOREIGN KEY([EmployeeID])
 REFERENCES [dbo].[Users] ([UserID])
 GO
 
 ALTER TABLE [dbo].[Employees] CHECK CONSTRAINT [FK_Employees_Users]
 GO
+
+ALTER TABLE [dbo].[Employees]  WITH CHECK ADD  CONSTRAINT [E_Type] CHECK  (([Type]='Secretary' OR [Type]='Headmaster'))
+GO
+
+ALTER TABLE [dbo].[Employees] CHECK CONSTRAINT [E_Type]
+GO
 ```
+
 Tabela ModulesAbsences:
 ```sql
 CREATE TABLE [dbo].[ModulesAbsences](
-	[ModuleAbsenceID] [nchar](10) NOT NULL,
 	[ModuleID] [int] NOT NULL,
 	[StudentID] [int] NOT NULL,
- CONSTRAINT [PK_CourseAbsences] PRIMARY KEY CLUSTERED 
+ CONSTRAINT [PK_ModulesAbsences] PRIMARY KEY CLUSTERED 
 (
-	[ModuleAbsenceID] ASC
+	[ModuleID] ASC,
+	[StudentID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
@@ -175,23 +286,34 @@ GO
 
 ALTER TABLE [dbo].[ModulesAbsences] CHECK CONSTRAINT [FK_ModulesAbsences_CoursesModules]
 GO
+
+ALTER TABLE [dbo].[ModulesAbsences]  WITH CHECK ADD  CONSTRAINT [FK_ModulesAbsences_Students] FOREIGN KEY([StudentID])
+REFERENCES [dbo].[Students] ([StudentID])
+GO
+
+ALTER TABLE [dbo].[ModulesAbsences] CHECK CONSTRAINT [FK_ModulesAbsences_Students]
+GO
 ```
+
 Tabela OrderedCourses:
 ```sql
 CREATE TABLE [dbo].[OrderedCourses](
-	[OrderedCourseID] [int] NOT NULL,
+	[OrderID] [nvarchar](50) NOT NULL,
 	[CourseID] [int] NOT NULL,
-	[StudentID] [int] NOT NULL,
-	[OrderDate] [datetime] NOT NULL,
-	[StartDate] [datetime] NOT NULL,
 	[LeftPayment] [money] NOT NULL,
 	[PaymentDeferral] [bit] NOT NULL,
 	[PaymentDeferralReason] [nvarchar](max) NULL,
+	[CertificateHyperlink] [nvarchar](100) NULL,
+	[IsGrantedCertificate] [bit] NOT NULL,
  CONSTRAINT [PK_OrderedCourses] PRIMARY KEY CLUSTERED 
 (
-	[OrderedCourseID] ASC
+	[OrderID] ASC,
+	[CourseID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[OrderedCourses] ADD  CONSTRAINT [DF_OrderedCourses_IsGrantedCertificate]  DEFAULT ((0)) FOR [IsGrantedCertificate]
 GO
 
 ALTER TABLE [dbo].[OrderedCourses]  WITH CHECK ADD  CONSTRAINT [FK_OrderedCourses_Courses] FOREIGN KEY([CourseID])
@@ -201,35 +323,59 @@ GO
 ALTER TABLE [dbo].[OrderedCourses] CHECK CONSTRAINT [FK_OrderedCourses_Courses]
 GO
 
-ALTER TABLE [dbo].[OrderedCourses]  WITH CHECK ADD  CONSTRAINT [FK_OrderedCourses_Students] FOREIGN KEY([StudentID])
-REFERENCES [dbo].[Students] ([StudentID])
+ALTER TABLE [dbo].[OrderedCourses]  WITH CHECK ADD  CONSTRAINT [FK_OrderedCourses_Orders] FOREIGN KEY([OrderID])
+REFERENCES [dbo].[Orders] ([OrderID])
 GO
 
-ALTER TABLE [dbo].[OrderedCourses] CHECK CONSTRAINT [FK_OrderedCourses_Students]
+ALTER TABLE [dbo].[OrderedCourses] CHECK CONSTRAINT [FK_OrderedCourses_Orders]
+GO
+
+ALTER TABLE [dbo].[OrderedCourses]  WITH CHECK ADD  CONSTRAINT [OC_Certificates] CHECK  (([IsGrantedCertificate]=(0) AND [CertificateHyperlink] IS NULL OR [CertificateHyperlink] IS NOT NULL))
+GO
+
+ALTER TABLE [dbo].[OrderedCourses] CHECK CONSTRAINT [OC_Certificates]
+GO
+
+ALTER TABLE [dbo].[OrderedCourses]  WITH CHECK ADD  CONSTRAINT [OC_LeftPayment] CHECK  (([LeftPayment]>=(0)))
+GO
+
+ALTER TABLE [dbo].[OrderedCourses] CHECK CONSTRAINT [OC_LeftPayment]
+GO
+
+ALTER TABLE [dbo].[OrderedCourses]  WITH CHECK ADD  CONSTRAINT [OC_PaymentDeferral] CHECK  (([PaymentDeferral]=(0) AND [PaymentDeferralReason] IS NULL OR [PaymentDeferral]=(1)))
+GO
+
+ALTER TABLE [dbo].[OrderedCourses] CHECK CONSTRAINT [OC_PaymentDeferral]
 GO
 ```
+
 Tabela OrderedStudies:
 ```sql
 CREATE TABLE [dbo].[OrderedStudies](
-	[OrderedStudyID] [int] NOT NULL,
+	[OrderID] [nvarchar](50) NOT NULL,
 	[StudyID] [int] NOT NULL,
-	[StudentID] [int] NOT NULL,
-	[OrderDate] [datetime] NOT NULL,
 	[PaymentDeferral] [bit] NOT NULL,
 	[PaymentDeferralReason] [nvarchar](max) NULL,
 	[FailedInternship] [bit] NOT NULL,
- CONSTRAINT [PK_OrderedStudies] PRIMARY KEY CLUSTERED 
+	[CertificateHyperlink] [nvarchar](100) NULL,
+	[IsGrantedCertificate] [bit] NOT NULL,
+	[EntryFeePaid] [bit] NOT NULL,
+ CONSTRAINT [PK_OrderedStudies_1] PRIMARY KEY CLUSTERED 
 (
-	[OrderedStudyID] ASC
+	[OrderID] ASC,
+	[StudyID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 
-ALTER TABLE [dbo].[OrderedStudies]  WITH CHECK ADD  CONSTRAINT [FK_OrderedStudies_Students] FOREIGN KEY([StudentID])
-REFERENCES [dbo].[Students] ([StudentID])
+ALTER TABLE [dbo].[OrderedStudies] ADD  CONSTRAINT [DF_OrderedStudies_IsGrantedCertificate]  DEFAULT ((0)) FOR [IsGrantedCertificate]
 GO
 
-ALTER TABLE [dbo].[OrderedStudies] CHECK CONSTRAINT [FK_OrderedStudies_Students]
+ALTER TABLE [dbo].[OrderedStudies]  WITH CHECK ADD  CONSTRAINT [FK_OrderedStudies_Orders] FOREIGN KEY([OrderID])
+REFERENCES [dbo].[Orders] ([OrderID])
+GO
+
+ALTER TABLE [dbo].[OrderedStudies] CHECK CONSTRAINT [FK_OrderedStudies_Orders]
 GO
 
 ALTER TABLE [dbo].[OrderedStudies]  WITH CHECK ADD  CONSTRAINT [FK_OrderedStudies_Studies] FOREIGN KEY([StudyID])
@@ -238,26 +384,42 @@ GO
 
 ALTER TABLE [dbo].[OrderedStudies] CHECK CONSTRAINT [FK_OrderedStudies_Studies]
 GO
+
+ALTER TABLE [dbo].[OrderedStudies]  WITH CHECK ADD  CONSTRAINT [OS_Certificates] CHECK  (([IsGrantedCertificate]=(0) AND [CertificateHyperlink] IS NULL OR [CertificateHyperlink] IS NOT NULL OR [FailedInternship]=(0) AND [CertificateHyperlink] IS NULL))
+GO
+
+ALTER TABLE [dbo].[OrderedStudies] CHECK CONSTRAINT [OS_Certificates]
+GO
+
+ALTER TABLE [dbo].[OrderedStudies]  WITH CHECK ADD  CONSTRAINT [OS_PaymentDeferral] CHECK  (([PaymentDeferral]=(0) AND [PaymentDeferralReason] IS NULL OR [PaymentDeferral]=(1)))
+GO
+
+ALTER TABLE [dbo].[OrderedStudies] CHECK CONSTRAINT [OS_PaymentDeferral]
+GO
 ```
+
 Tabela OrderedStudyMeetings:
 ```sql
 CREATE TABLE [dbo].[OrderedStudyMeetings](
-	[OrderedStudyMeetingID] [int] NOT NULL,
-	[StudentID] [int] NOT NULL,
+	[OrderID] [nvarchar](50) NOT NULL,
 	[StudyMeetingID] [int] NOT NULL,
-	[OrderDate] [datetime] NOT NULL,
- CONSTRAINT [PK_OrderedStudyMeetings] PRIMARY KEY CLUSTERED 
+	[IsPartOfStudies] [bit] NOT NULL,
+	[LeftPayment] [money] NOT NULL,
+	[PaymentDeferral] [bit] NOT NULL,
+	[PaymentDeferralReason] [nvarchar](max) NULL,
+ CONSTRAINT [PK_OrderedStudyMeetings_1] PRIMARY KEY CLUSTERED 
 (
-	[OrderedStudyMeetingID] ASC
+	[StudyMeetingID] ASC,
+	[OrderID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 
-ALTER TABLE [dbo].[OrderedStudyMeetings]  WITH CHECK ADD  CONSTRAINT [FK_OrderedStudyMeetings_Students] FOREIGN KEY([StudentID])
-REFERENCES [dbo].[Students] ([StudentID])
+ALTER TABLE [dbo].[OrderedStudyMeetings]  WITH CHECK ADD  CONSTRAINT [FK_OrderedStudyMeetings_Orders] FOREIGN KEY([OrderID])
+REFERENCES [dbo].[Orders] ([OrderID])
 GO
 
-ALTER TABLE [dbo].[OrderedStudyMeetings] CHECK CONSTRAINT [FK_OrderedStudyMeetings_Students]
+ALTER TABLE [dbo].[OrderedStudyMeetings] CHECK CONSTRAINT [FK_OrderedStudyMeetings_Orders]
 GO
 
 ALTER TABLE [dbo].[OrderedStudyMeetings]  WITH CHECK ADD  CONSTRAINT [FK_OrderedStudyMeetings_StudyMeetings] FOREIGN KEY([StudyMeetingID])
@@ -266,29 +428,36 @@ GO
 
 ALTER TABLE [dbo].[OrderedStudyMeetings] CHECK CONSTRAINT [FK_OrderedStudyMeetings_StudyMeetings]
 GO
+
+ALTER TABLE [dbo].[OrderedStudyMeetings]  WITH CHECK ADD  CONSTRAINT [OSM_PaymentDeferral] CHECK  (([PaymentDeferral]=(0) AND [PaymentDeferralReason] IS NULL OR [PaymentDeferral]=(1)))
+GO
+
+ALTER TABLE [dbo].[OrderedStudyMeetings] CHECK CONSTRAINT [OSM_PaymentDeferral]
+GO
 ```
+
 Tabela OrderedWebinars:
 ```sql
 CREATE TABLE [dbo].[OrderedWebinars](
-	[OrderedWebinarID] [int] IDENTITY(1,1) NOT NULL,
+	[OrderID] [nvarchar](50) NOT NULL,
 	[WebinarID] [int] NOT NULL,
-	[StudentID] [int] NOT NULL,
-	[OrderDate] [datetime] NOT NULL,
-	[DeliveryDate] [datetime] NOT NULL,
+	[LeftPayment] [money] NOT NULL,
+	[PickupDate] [datetime] NOT NULL,
 	[PaymentDeferral] [bit] NOT NULL,
 	[PaymentDeferralReason] [nvarchar](max) NULL,
  CONSTRAINT [PK_OrderedWebinars] PRIMARY KEY CLUSTERED 
 (
-	[OrderedWebinarID] ASC
+	[OrderID] ASC,
+	[WebinarID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 
-ALTER TABLE [dbo].[OrderedWebinars]  WITH CHECK ADD  CONSTRAINT [FK_OrderedWebinars_Students] FOREIGN KEY([StudentID])
-REFERENCES [dbo].[Students] ([StudentID])
+ALTER TABLE [dbo].[OrderedWebinars]  WITH CHECK ADD  CONSTRAINT [FK_OrderedWebinars_Orders] FOREIGN KEY([OrderID])
+REFERENCES [dbo].[Orders] ([OrderID])
 GO
 
-ALTER TABLE [dbo].[OrderedWebinars] CHECK CONSTRAINT [FK_OrderedWebinars_Students]
+ALTER TABLE [dbo].[OrderedWebinars] CHECK CONSTRAINT [FK_OrderedWebinars_Orders]
 GO
 
 ALTER TABLE [dbo].[OrderedWebinars]  WITH CHECK ADD  CONSTRAINT [FK_OrderedWebinars_Webinars] FOREIGN KEY([WebinarID])
@@ -297,20 +466,45 @@ GO
 
 ALTER TABLE [dbo].[OrderedWebinars] CHECK CONSTRAINT [FK_OrderedWebinars_Webinars]
 GO
+
+ALTER TABLE [dbo].[OrderedWebinars]  WITH CHECK ADD  CONSTRAINT [OW_LeftPayment] CHECK  (([LeftPayment]>=(0)))
+GO
+
+ALTER TABLE [dbo].[OrderedWebinars] CHECK CONSTRAINT [OW_LeftPayment]
+GO
+
+ALTER TABLE [dbo].[OrderedWebinars]  WITH CHECK ADD  CONSTRAINT [OW_PaymentDeferral] CHECK  (([PaymentDeferral]=(0) AND [PaymentDeferralReason] IS NULL OR [PaymentDeferral]=(1)))
+GO
+
+ALTER TABLE [dbo].[OrderedWebinars] CHECK CONSTRAINT [OW_PaymentDeferral]
+GO
 ```
+
+Tabela Orders:
+```sql
+CREATE TABLE [dbo].[Orders](
+	[OrderID] [nvarchar](50) NOT NULL,
+	[StudentID] [int] NOT NULL,
+	[OrderDate] [datetime] NOT NULL,
+	[Status] [nvarchar](50) NOT NULL,
+ CONSTRAINT [PK_Orders] PRIMARY KEY CLUSTERED 
+(
+	[OrderID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Orders]  WITH CHECK ADD  CONSTRAINT [O_Status] CHECK  (([Status]='Delivered' OR [Status]='Pending' OR [Status]='InBasket'))
+GO
+
+ALTER TABLE [dbo].[Orders] CHECK CONSTRAINT [O_Status]
+GO
+```
+
 Tabela Students:
 ```sql
 CREATE TABLE [dbo].[Students](
-	[StudentID] [int] IDENTITY(1,1) NOT NULL,
-	[UserID] [int] NOT NULL,
-	[Name] [nvarchar](50) NULL,
-	[Surname] [nvarchar](50) NULL,
-	[Country] [nvarchar](50) NOT NULL,
-	[City] [nvarchar](50) NOT NULL,
-	[ZipCode] [nvarchar](50) NULL,
-	[Street] [nvarchar](50) NOT NULL,
-	[Address] [nvarchar](50) NOT NULL,
-	[PhoneNumber] [nvarchar](50) NULL,
+	[StudentID] [int] NOT NULL,
  CONSTRAINT [PK_Students] PRIMARY KEY CLUSTERED 
 (
 	[StudentID] ASC
@@ -318,24 +512,23 @@ CREATE TABLE [dbo].[Students](
 ) ON [PRIMARY]
 GO
 
-ALTER TABLE [dbo].[Students]  WITH CHECK ADD  CONSTRAINT [FK_Students_Users] FOREIGN KEY([UserID])
+ALTER TABLE [dbo].[Students]  WITH CHECK ADD  CONSTRAINT [FK_Students_Users1] FOREIGN KEY([StudentID])
 REFERENCES [dbo].[Users] ([UserID])
 GO
 
-ALTER TABLE [dbo].[Students] CHECK CONSTRAINT [FK_Students_Users]
+ALTER TABLE [dbo].[Students] CHECK CONSTRAINT [FK_Students_Users1]
 GO
 ```
+
 Tabela Studies:
 ```sql
 CREATE TABLE [dbo].[Studies](
-	[StudyID] [int] NOT NULL,
+	[StudyID] [int] IDENTITY(1,1) NOT NULL,
 	[FieldOfStudy] [nvarchar](50) NOT NULL,
 	[Duration] [int] NOT NULL,
-	[Price] [money] NOT NULL,
 	[EntryFee] [money] NOT NULL,
 	[AcademicYear] [int] NOT NULL,
 	[Limit] [int] NOT NULL,
-	[MeetingCount] [int] NOT NULL,
 	[Language] [nvarchar](50) NOT NULL,
 	[TranslatorName] [nvarchar](50) NULL,
 	[TranslatorSurname] [nchar](10) NULL,
@@ -345,10 +538,45 @@ CREATE TABLE [dbo].[Studies](
  CONSTRAINT [PK_Studies] PRIMARY KEY CLUSTERED 
 (
 	[StudyID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [FieldOfStudy] UNIQUE NONCLUSTERED 
+(
+	[FieldOfStudy] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
+
+ALTER TABLE [dbo].[Studies]  WITH CHECK ADD  CONSTRAINT [S_Duration] CHECK  (([Duration]>(0)))
+GO
+
+ALTER TABLE [dbo].[Studies] CHECK CONSTRAINT [S_Duration]
+GO
+
+ALTER TABLE [dbo].[Studies]  WITH CHECK ADD  CONSTRAINT [S_EntryFee] CHECK  (([EntryFee]>=(0)))
+GO
+
+ALTER TABLE [dbo].[Studies] CHECK CONSTRAINT [S_EntryFee]
+GO
+
+ALTER TABLE [dbo].[Studies]  WITH CHECK ADD  CONSTRAINT [S_Limit] CHECK  (([Limit]>(0)))
+GO
+
+ALTER TABLE [dbo].[Studies] CHECK CONSTRAINT [S_Limit]
+GO
+
+ALTER TABLE [dbo].[Studies]  WITH CHECK ADD  CONSTRAINT [S_NotEmpty] CHECK  (([SyllabusDescription]<>'' AND [InternshipName]<>''))
+GO
+
+ALTER TABLE [dbo].[Studies] CHECK CONSTRAINT [S_NotEmpty]
+GO
+
+ALTER TABLE [dbo].[Studies]  WITH CHECK ADD  CONSTRAINT [S_Translator] CHECK  (([TranslatorName]<>'' AND [TranslatorSurname]<>''))
+GO
+
+ALTER TABLE [dbo].[Studies] CHECK CONSTRAINT [S_Translator]
+GO
 ```
+
 Tabela StudyMeetings:
 ```sql
 CREATE TABLE [dbo].[StudyMeetings](
@@ -358,6 +586,7 @@ CREATE TABLE [dbo].[StudyMeetings](
 	[TeacherID] [int] NOT NULL,
 	[MeetingName] [nvarchar](50) NOT NULL,
 	[MeetingPrice] [money] NOT NULL,
+	[MeetingPriceForStudents] [money] NOT NULL,
 	[BeginningDate] [datetime] NOT NULL,
 	[Duration] [time](7) NULL,
 	[MeetingSyllabusDescription] [nvarchar](1000) NOT NULL,
@@ -375,19 +604,65 @@ GO
 
 ALTER TABLE [dbo].[StudyMeetings] CHECK CONSTRAINT [FK_StudyMeetings_Studies]
 GO
+
+ALTER TABLE [dbo].[StudyMeetings]  WITH CHECK ADD  CONSTRAINT [FK_StudyMeetings_Teachers] FOREIGN KEY([TeacherID])
+REFERENCES [dbo].[Teachers] ([TeacherID])
+GO
+
+ALTER TABLE [dbo].[StudyMeetings] CHECK CONSTRAINT [FK_StudyMeetings_Teachers]
+GO
+
+ALTER TABLE [dbo].[StudyMeetings]  WITH CHECK ADD  CONSTRAINT [SM_Duration] CHECK  (([Duration]='01:30' OR [Duration]='00:45'))
+GO
+
+ALTER TABLE [dbo].[StudyMeetings] CHECK CONSTRAINT [SM_Duration]
+GO
+
+ALTER TABLE [dbo].[StudyMeetings]  WITH CHECK ADD  CONSTRAINT [SM_MeetingPrice] CHECK  (([MeetingPrice]>(0) AND [MeetingPriceForStudents]>(0)))
+GO
+
+ALTER TABLE [dbo].[StudyMeetings] CHECK CONSTRAINT [SM_MeetingPrice]
+GO
+
+ALTER TABLE [dbo].[StudyMeetings]  WITH CHECK ADD  CONSTRAINT [SM_MeetingSyllabus] CHECK  (([MeetingSyllabusDescription]<>''))
+GO
+
+ALTER TABLE [dbo].[StudyMeetings] CHECK CONSTRAINT [SM_MeetingSyllabus]
+GO
+
+ALTER TABLE [dbo].[StudyMeetings]  WITH CHECK ADD  CONSTRAINT [SM_SeatCount] CHECK  (([SeatCount]>(0)))
+GO
+
+ALTER TABLE [dbo].[StudyMeetings] CHECK CONSTRAINT [SM_SeatCount]
+GO
+
+ALTER TABLE [dbo].[StudyMeetings]  WITH CHECK ADD  CONSTRAINT [SM_Type] CHECK  (([Type]='Zdalne' OR [Type]='Hybrydowe' OR [Type]='Stacjonarne'))
+GO
+
+ALTER TABLE [dbo].[StudyMeetings] CHECK CONSTRAINT [SM_Type]
+GO
+
 ```
+
 Tabela StudyMeetingsAbsences:
 ```sql
 CREATE TABLE [dbo].[StudyMeetingsAbsences](
-	[StudyMeetingAbsenceID] [int] NOT NULL,
 	[StudyMeetingID] [int] NOT NULL,
 	[StudentID] [int] NOT NULL,
 	[HasBeenCaughtUp] [bit] NOT NULL,
  CONSTRAINT [PK_StudyMeetingsAbsences_1] PRIMARY KEY CLUSTERED 
 (
-	[StudyMeetingAbsenceID] ASC
+	[StudyMeetingID] ASC,
+	[StudentID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[StudyMeetingsAbsences]  WITH CHECK ADD  CONSTRAINT [FK_StudyMeetingsAbsences_Students] FOREIGN KEY([StudentID])
+REFERENCES [dbo].[Students] ([StudentID])
+GO
+
+ALTER TABLE [dbo].[StudyMeetingsAbsences] CHECK CONSTRAINT [FK_StudyMeetingsAbsences_Students]
 GO
 
 ALTER TABLE [dbo].[StudyMeetingsAbsences]  WITH CHECK ADD  CONSTRAINT [FK_StudyMeetingsAbsences_StudyMeetings1] FOREIGN KEY([StudyMeetingID])
@@ -397,18 +672,11 @@ GO
 ALTER TABLE [dbo].[StudyMeetingsAbsences] CHECK CONSTRAINT [FK_StudyMeetingsAbsences_StudyMeetings1]
 GO
 ```
+
 Tabela Teachers:
 ```sql
 CREATE TABLE [dbo].[Teachers](
-	[TeacherID] [int] IDENTITY(1,1) NOT NULL,
-	[UserID] [int] NOT NULL,
-	[Name] [nvarchar](50) NOT NULL,
-	[Surname] [nvarchar](50) NOT NULL,
-	[Country] [nvarchar](50) NOT NULL,
-	[City] [nvarchar](50) NOT NULL,
-	[ZipCode] [nvarchar](50) NULL,
-	[Street] [nvarchar](50) NOT NULL,
-	[Address] [nvarchar](50) NOT NULL,
+	[TeacherID] [int] NOT NULL,
  CONSTRAINT [PK_Teachers] PRIMARY KEY CLUSTERED 
 (
 	[TeacherID] ASC
@@ -416,30 +684,59 @@ CREATE TABLE [dbo].[Teachers](
 ) ON [PRIMARY]
 GO
 
-ALTER TABLE [dbo].[Teachers]  WITH CHECK ADD  CONSTRAINT [FK_Teachers_Users] FOREIGN KEY([UserID])
+ALTER TABLE [dbo].[Teachers]  WITH CHECK ADD  CONSTRAINT [FK_Teachers_Users1] FOREIGN KEY([TeacherID])
 REFERENCES [dbo].[Users] ([UserID])
 GO
 
-ALTER TABLE [dbo].[Teachers] CHECK CONSTRAINT [FK_Teachers_Users]
+ALTER TABLE [dbo].[Teachers] CHECK CONSTRAINT [FK_Teachers_Users1]
 GO
 ```
+
 Tabela Users:
 ```sql
 CREATE TABLE [dbo].[Users](
 	[UserID] [int] IDENTITY(1,1) NOT NULL,
 	[Email] [nvarchar](320) NOT NULL,
 	[Password] [nvarchar](50) NOT NULL,
+	[Name] [nvarchar](50) NOT NULL,
+	[Surname] [nvarchar](50) NOT NULL,
+	[CountryID] [int] NOT NULL,
+	[CityID] [int] NOT NULL,
+	[ZipCode] [nvarchar](50) NULL,
+	[Street] [nvarchar](50) NOT NULL,
+	[Address] [nvarchar](50) NOT NULL,
+	[PhoneNumber] [nvarchar](50) NULL,
  CONSTRAINT [PK_Users] PRIMARY KEY CLUSTERED 
 (
 	[UserID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+
+ALTER TABLE [dbo].[Users]  WITH CHECK ADD  CONSTRAINT [FK_Users_CountryCity] FOREIGN KEY([CountryID], [CityID])
+REFERENCES [dbo].[CountryCity] ([CountryID], [CityID])
+GO
+
+ALTER TABLE [dbo].[Users] CHECK CONSTRAINT [FK_Users_CountryCity]
+GO
+
+ALTER TABLE [dbo].[Users]  WITH CHECK ADD  CONSTRAINT [U_Names] CHECK  (([Name]<>'' AND [Surname]<>''))
+GO
+
+ALTER TABLE [dbo].[Users] CHECK CONSTRAINT [U_Names]
+GO
+
+ALTER TABLE [dbo].[Users]  WITH CHECK ADD  CONSTRAINT [U_NotEmpty] CHECK  (([Email]<>'' AND [Password]<>'' AND [ZipCode]<>'' AND [Street]<>'' AND [Address]<>'' AND [PhoneNumber]<>''))
+GO
+
+ALTER TABLE [dbo].[Users] CHECK CONSTRAINT [U_NotEmpty]
+GO
 ```
+
 Tabela Webinars:
 ```sql
 CREATE TABLE [dbo].[Webinars](
-	[WebinarID] [int] NOT NULL,
+	[WebinarID] [int] IDENTITY(1,1) NOT NULL,
 	[TeacherID] [int] NOT NULL,
 	[Name] [nvarchar](50) NOT NULL,
 	[Price] [money] NOT NULL,
@@ -447,6 +744,7 @@ CREATE TABLE [dbo].[Webinars](
 	[Language] [nvarchar](50) NOT NULL,
 	[TranslatorName] [nvarchar](50) NULL,
 	[TranslatorSurname] [nvarchar](50) NULL,
+	[StartDate] [datetime] NOT NULL,
  CONSTRAINT [PK_Webinars] PRIMARY KEY CLUSTERED 
 (
 	[WebinarID] ASC
@@ -460,28 +758,36 @@ GO
 
 ALTER TABLE [dbo].[Webinars] CHECK CONSTRAINT [FK_Webinars_Teachers]
 GO
-```
-Wstawiliśmy do bazy dane testowe za pomocą generatora Mockaroo. Większość tabel(poza Employees i Teachers) ma 7-15 rekordów. Oto przykładowe operacje insert, które wykonaliśmy: 
 
-Do Courses:
-```sql
-insert into Courses (CourseID, Name, Price, Duration, MeetingCount, Limit, Language, TranslatorName, TranslatorSurname, Hyperlink) values (1, 'Andalax', 38.09, 14, 50, 144, 'Moldovan', 'Corrina', 'Carmont', 'https://cdbaby.com');
-insert into Courses (CourseID, Name, Price, Duration, MeetingCount, Limit, Language, TranslatorName, TranslatorSurname, Hyperlink) values (2, 'Tampflex', 20.6, 9, 32, 107, 'Nepali', 'Hedy', 'Paddock', 'http://uol.com.br');
-```
-Do Students:
-```sql
-insert into Students (StudentID, UserID, Country, City, ZipCode, Street, Address, PhoneNumber) values (1, 1, 'China', 'Xingnong', null, 'Corscot', 'PO Box 32827', '147-766-9836');
-insert into Students (StudentID, UserID, Country, City, ZipCode, Street, Address, PhoneNumber) values (2, 2, 'Netherlands', 'Enschede', '7514', 'Burning Wood', 'PO Box 54439', '347-181-7847');
-```
-Do StudyMeetingsAbsences:
-```sql
-insert into StudyMeetingsAbsences (StudyMeetingAbsenceID, StudyMeetingID, StudentID, HasBeenCaughtUp) values (1, 1, 1, 0);
-insert into StudyMeetingsAbsences (StudyMeetingAbsenceID, StudyMeetingID, StudentID, HasBeenCaughtUp) values (2, 2, 2, 0);
-```
-Do OrderedWebinars:
-```sql
-insert into OrderedWebinars (OrderedWebinarID, WebinarID, StudentID, OrderDate, ExpireDate, PaymentDeferral, PaymentDeferralReason) values (1, 1, 1, '11/3/2023', '6/25/2023', 1, 'Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam.');
-insert into OrderedWebinars (OrderedWebinarID, WebinarID, StudentID, OrderDate, ExpireDate, PaymentDeferral, PaymentDeferralReason) values (2, 2, 2, '12/13/2022', '5/25/2023', 0, null);
+ALTER TABLE [dbo].[Webinars]  WITH CHECK ADD  CONSTRAINT [W_Hyperlink] CHECK  (([Hyperlink]<>''))
+GO
+
+ALTER TABLE [dbo].[Webinars] CHECK CONSTRAINT [W_Hyperlink]
+GO
+
+ALTER TABLE [dbo].[Webinars]  WITH CHECK ADD  CONSTRAINT [W_Language] CHECK  (([Language]<>''))
+GO
+
+ALTER TABLE [dbo].[Webinars] CHECK CONSTRAINT [W_Language]
+GO
+
+ALTER TABLE [dbo].[Webinars]  WITH CHECK ADD  CONSTRAINT [W_Name] CHECK  (([Name]<>''))
+GO
+
+ALTER TABLE [dbo].[Webinars] CHECK CONSTRAINT [W_Name]
+GO
+
+ALTER TABLE [dbo].[Webinars]  WITH CHECK ADD  CONSTRAINT [W_Price] CHECK  (([Price]>(0)))
+GO
+
+ALTER TABLE [dbo].[Webinars] CHECK CONSTRAINT [W_Price]
+GO
+
+ALTER TABLE [dbo].[Webinars]  WITH CHECK ADD  CONSTRAINT [W_Translator] CHECK  (([TranslatorName]<>'' AND [TranslatorSurname]<>''))
+GO
+
+ALTER TABLE [dbo].[Webinars] CHECK CONSTRAINT [W_Translator]
+GO
 ```
 
 Opisy tabel:
