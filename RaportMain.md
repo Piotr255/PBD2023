@@ -61,6 +61,93 @@ pbd_<14>_raport4 | Piotr Albiński, Adam Konior, Mateusz Maciaszczyk
 
 <img src="ScreenShot bazy raport 4.png">
 
+## Opisy tabel:
+
+## Tabela Countries:
+lista wszystkich państw
+
+## Tabela City
+lista wszystkich miast
+
+## Tabela CountryCity
+tabela która łączy kraje z miastami, używamy do walidacji czy dane miasto znajduje się w danym państwie
+
+## Tabela Users:
+tabela, w której znajdują się wszyscy użytkownicy i ich dane
+
+## Tabela Employees:
+tabela zawiera osoby, które są pracownikami
+type określa czy jest to pracownik biura czy dyrektor
+
+## Tabela Students:
+tabela zawiera wszystkie osoby, które są uczniami/wykupiły jakiś kurs/webinar
+
+## Tabela Teachers:
+tabela zawiera wszystkie osoby, które są nauczycielami
+
+## Tabela Webinars:
+tabela zawiera informacje na temat wszystkich webinarów
+hyperlink: link do webinaru
+language: język, w którym są prowadzone webinary
+translatorName, translatorSurname: imię i nazwisko translatora
+
+## Tabela Courses:
+tabela zawiera informacje na temat wszystkich kursów
+duration: czas trwania kursu
+modulesCount: liczba modułów, z których składa się kurs
+limit: ile osób może maksymalnie uczestniczyć w kursie
+
+
+
+## Tabela CoursesModules:
+tabela zawiera informacje na temat modułów, z których składa się kurs(courseID identyfikator kursu, w którym zawiera się dany moduł)
+type: typ modułu np. stacjonarne, online…
+BeginningDate, EndingDate: data rozpoczęcia i zakończenia kursu
+
+## Tabela ModulesAbsences:
+tabela zawiera informacje, który student nie był na którym module z kursów
+
+## Tabela Studies:
+tabela zawiera informacje na temat wszystkich studiów
+duration: ile semestrów trwają studia
+entryFee: opłata rekrutacyjna
+SyllabusDescription: opis toku studiów 
+
+## Tabela StudyMeetings:
+tabela zawiera informacje na temat wszystkich spotkań w ramach studiów
+type: typ spotkania np. stacjonarne, zdalne, hybrydowe
+MeetingPrice, MeetingPriceForStudents: cena za pojedyncze spotkanie dla osoby spoza studiów oraz dla osoby zapisanej już na studia
+
+## Tabela StudyMeetingsAbsences
+tabela zawiera informacje, który student nie był na którym spotkaniu ze studiów
+HasBeenCaughtUp: informacja czy odrobił tę nieobecność
+
+## Tabela Orders:
+tabela pełni rolę koszyka, zapisuje dane, który student co ma w koszyku oraz kiedy to zamówił
+status: informacja czy produkt jest w koszyku, czy płatność jest przetwarzana oraz czy produkt już jest zamówiony
+
+## Tabela OrderedWebinars:
+tabela zawiera informacje na temat zamówionych webinariów 
+OrderID: klucz obcy, który wskazuje na tabele Orders, do którego zamówienia należy dany webinar
+LeftPayment: ile zostało do zapłacenia
+PickupDate: okres, na który został zakupiony webinar
+PaymentDeferral, PaymentDeferralReasson: czy płatność została odroczona oraz powód
+
+## Tabela OrderedCourses:
+tabela zawiera informacje na temat zamówionych kursów
+IsGrantedCertificate: czy został przyznany certyfikat
+CertificateHyperlink: link do certyfikatu
+
+## Tabela OrderedStudies:
+tabela zawiera informacje na temat zamówionych studiów
+FailedInternship: czy praktyki zostały zaliczone
+EntryFeePaid: czy opłata rekrutacyjna została opłacona
+
+## Tabela OrderedStudyMeetings:
+tabela zawiera informacje na temat zamówionych pojedynczych spotkań z toku studiów
+IsPartOfStudies: czy osoba która zamówiła spotkanie bierze udział w studiach
+LeftPayment: ile zostało do zapłacenia
+
 ## Skrypty tworzenia tabel:
 
 ## Tabela City: 
@@ -788,144 +875,6 @@ GO
 ALTER TABLE [dbo].[Webinars] CHECK CONSTRAINT [W_Translator]
 GO
 ```
-
-## Opisy tabel:
-
-## Tabela Certificates:
-- Zawiera certifykaty dostępne przez hiperlink przypisywane studentom po ukończeniu określonego kursu
-
-## Tabela Courses:
-- CourseID, Name, Price, Duration, ModulesCount to odpowiednio identyfikator kursu, nazwa kursu, cena kursu, czas trwania kursu, liczba modułów.
-- Limit to maksymalna liczba uczestników, ponieważ kursy hybrydowe i stacjonarne mają właśnie limit miejsc. 
-- Language to język, w którym prowadzony jest kurs.
-- TranslatorName i TranslatorSurname to imię i nazwisko osoby na żywo tłumaczącej wykład na język polski.
-- Hyperlink to link do kursu, jeśli jest on prowadzony online.
- 
-## Tabela CoursesModules:
-- Zawiera identyfikator modułu, identyfikator kursu, identyfikator nauczyciela prowadzącego kurs, nazwę modułu, typ modułu, datę rozpoczęcia, datę zakończenia, limit miejsc, jeśli taki jest
-- Type(typ modułu) mówi, czy dany moduł jest stacjonary, online asynchroniczny, itp.
-- SeatCount to limit miejsc, jeśli kurs jest online, to SeatCount powinien być null.
-
-## Tabela Employees:
-- Identyfikator pracownika
-- Identyfikator użytkownika
-- Imię pracownika
-- Nazwisko pracownika
-- Kraj zamieszkania
-- Miejscowość
-- Kod pocztowy
-- Ulica
-- Adres
-
-## Tabela Students:
-- Tabela przechowuje informacje o studencie - jego numer identyfikacyjny, adres i numer telefonu
-- StudentID
-- UserID
-- Name
-- Surname
-- Country
-- City
-- ZipCode
-- Street
-- PhoneNumber
-
-## Tabela OrderedWebinars:
-- Tabela przechowuje informacje o zamówionych Webinarach. Przechowywujemy w niej identyfikator zamówienia, identyfikator webinaru, identyfikator kupującego studenta, datę zakupu, informację o odroczeniu płatności (typ bit 0/1) oraz ewentualne uzasadnienienie.
-- OrderedWebinarID
-- WebinarID
-- StudentID
-- OrderDate
-- PaymentDefferal
-- PaymentDeferralReason
-
-## Tabela OrderedStudyMeetings
-- Tabela przechowuje zakupiony dostęp przez studentów na spotkania na studiach. Tabela zawiera identyfikator zamówienia, identyfikator studiów, identyfikator spotkania, datę zamówienia.
-- OrderedStudyMeetingID
-- StudentID
-- StudyMeetingID
-- OrderDate
-
-
-
-## Tabela OrderedStudies
-- Tabela przechowuje zakupione przez studentów studia. Tabela zawiera identyfikator zamówienia, identyfikator studiów, identyfikator studenta, datę zamówienia, informację o odroczeniu płatności (typ bit 0/1) oraz ewentualne uzasadnienienie, pole informujące o niezaliczeniu studiów
-- OrderedStudyID
-- StudyID
-- StudentID
-- OrderDate
-- PaymentDeferral
-- PaymentDeferralReason
-- FailedInternship
-
-## Tabela OrderedCourses 
-- Tabela przechowuje informacje o złożonych zamówieniach kursów przez studentów. Tabela zawiera pola identyfikatora zamówienia kursu, identyfikator kursu, identyfikator studenta, datę zamówienia, datę rozpoczęcia kursu, ile danemu studentowi pozostało do zapłaty (po zapłaceniu zaliczki),  informację o odroczeniu płatności (typ bit 0/1) oraz ewentualne uzasadnienienie.
-- OrderedCourseID
-- CourseID
-- StudentID
-- OrderDate
-- StartDate
-- LeftPayment
-- PaymentDeferral
-- PaymentDeferralReason
-
-## Tabela ModulesAbsences
-- Tabela przechowuje nieobecności studentów na modułach. Tabela zawiera identyfikator absencji, identyfikator modułu, identyfikator studenta.
-- ModuleAbsenceID
-- ModuleID
-- StudentID
-
-## Tabela Webinars:
-- WebinarID identyfikator webinaru
-- TeacherID identyfikator nauczyciela prowadzącego webinar
-- Name nazwa webinaru
-- Price cena webinaru
-- Hyperlink link do webinaru
-- Language język, w którym jest prowadzony webinar
-- TranslatorName, TranslatorSurname imię i nazwisko tłumacza
-
-## Tabela Users:
-- Userid identyfikator użytkownika
-- Email, Password - email i hasło użytkownika
-
-## Tabela Teachers:
-- TeacherID - identyfikator nauczyciela
-- Name, Surname - imię i nazwisko nauczyciela
-- Country, City, ZipCode, Street, Address - dane kontaktowe
-
-## Tabela StudyMeetings: 
-- StudyMeetingID identyfikator zajęć
-- Type typ zajęć(stacjonarne, online...)
-- teacherID identyfikator nauczyciela prowadzącego zajęcia
-- MeetingName nazwa spotkania
-- MeetingPrice cena spotkania jeżeli chce je kupić ktoś kto nie jest zapisany na studia
-- BeginingDate, EndingDate data i czas rozpoczęcia i zakończenia zajęć
-- MeetingSyllabusDescription opis zajęć(syllabus)
-- SeatCount ilość wolnych miejsc(kiedy ktoś z poza studiów chce kupić miejsce to wiemy ile ich jest)
-
-## Tabela StudyMeetingsAbsence:
-- StudyMeetingsAbsence identyfikator nieobecności
-- StudyMeetingID identyfikator zajęć
-- StudentID identyfikator studenta
-- HasBeenCaughtUp czy ta nieobecność została nadrobiona
-
-## Tabela Studies:
-- StudyID identyfikator studiów
-- FieldOfStudy nazwa studiów
-- Duration czas trwania studiów(ilość semestrów)
-- Price koszt studiow
-- StudySyllabusID klucz obcy do tabeli ze studymeetings
-- EntryFee opłata początkowa za studia
-- AcademicYear rok zaczęcia studiów
-- Limit limit  miejsc możliwych do przyjęcia studentów
-- MeetingCount ilość wszystkich spotkań w ramach studiów
-- Language język sudiów
-- Translator czy jest tłumacz
-- SyllabusDescription opis studiów
-- InternshipName nazwa praktyk
-- InternshipStartDate data rozpoczęcia praktyk
-
-
-
 
 ## Widoki
 
