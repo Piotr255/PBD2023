@@ -1,4 +1,4 @@
-1) Dodaliśmy koszyk jako tabelę Orders, tam zamówienie może mieć status Pending albo Delivered. Zamówienia o statusie Delivered są również umieszczane w odpowiedniej tabeli spośród OrderedCourses, OrderedStudies, OrderedStudyMeetings, OrderedWebinars.
+1) Dodaliśmy koszyk jako tabelę Orders, tam zamówienie może mieć status Pending albo Delivered.
 2) Jeśli chodzi o absencje, to zostawiliśmy je tak jak były, będziemy za każdym razem przy wpisywaniu absencji sprawdzać, czy dany student ma kupiony dany kurs lub dane StudyMeetings, ponieważ, gdybyśmy chcieli to zmienić, to musielibyśmy dodać OrderedModules, ale przecież moduły są niezmienne dla danego kursu. W związku z tym, aby nie mieszać modeli, postanowiliśmy to tak też zostawić dla StudyMeetings.
 3) Przenieśliśmy dane użytkowników takie jak adres to tabeli users, aby ich nie powielać, przez to tabele Students, Teachers, Employees mają teraz tylko po 1-2 kolumny.
 4) Dodaliśmy walidację miast i państw.

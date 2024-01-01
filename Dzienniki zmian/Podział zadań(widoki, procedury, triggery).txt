@@ -1,0 +1,8 @@
+Piotr:
+- wszystkie raporty
+
+Mateusz:
+procedury wprowadzania danych:
+- dodawanie użytkowników(studenci, nauczyciele, pracownicy)
+- dodawanie wydarzeń(webinary, kursy, studia)
+- modyfikacje użytkowników, wydarzeń

@@ -1,0 +1,6 @@
+kod autoryzacji płatności
+rejestracja poszczególnych wpłat
+zjazdy
+tabela słownikowa language
+typy dwuznakowe(Online Asynchroniczny...)
+nazwy widoków - create view as
