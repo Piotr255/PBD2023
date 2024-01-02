@@ -1419,3 +1419,141 @@ BEGIN
 	END
 END
 ```
+
+```sql
+ALTER PROCEDURE [dbo].[InsertCourses]
+    @Name NVARCHAR(50),
+    @Price MONEY,
+    @StartDate DATETIME,
+    @Duration INT,
+    @ModulesCount INT,
+    @Limit INT,
+    @Language NVARCHAR(50),
+    @TranslatorName NVARCHAR(50),
+    @TranslatorSurname NVARCHAR(50),
+    @Hyperlink NVARCHAR(100)
+AS
+BEGIN
+    -- sprawdzamy czy jezyk istnieje
+    if not exists (select * from Languages where Language = @Language)
+        begin
+            raiserror('Język nie istnieje', 16, 1)
+        end
+    else
+        begin
+            -- sprawdzamy czy data jest wieksza od dzisiejszej
+            if @StartDate <= GETDATE()
+                begin
+                    raiserror('Data startu musi byc po dniu dzisiajeszym', 16, 1)
+                end
+            else
+                begin
+                    insert into Courses (Name, Price, StartDate, Duration, ModulesCount, Limit, LanguageID, TranslatorName, TranslatorSurname, Hyperlink)
+                    values (@Name, @Price, @StartDate, @Duration, @ModulesCount, @Limit, (select LanguageID from Languages where Language = @Language), @TranslatorName, @TranslatorSurname, @Hyperlink)
+                end
+        end
+END
+```
+
+```sql
+ALTER PROCEDURE [dbo].[InsertStudieMeetings]
+    @Study nvarchar(50),
+    @Type nvarchar(50),
+    @TeacherID int,
+    @Language nvarchar(50),
+    @MeetingName nvarchar(50),
+    @MeetingPrice money,
+    @MeetingPriceForStudents money,
+    @BeginningDate datetime,
+    @Duration time,
+    @Syllabus nvarchar(max),
+    @Limit int,
+    @TranslatorName nvarchar(50),
+    @TranslatorSurname nvarchar(50)
+AS
+BEGIN
+    if not exists (select * from Teachers where TeacherId = @TeacherID)
+        begin
+            raiserror('Nauczyciel nie istnieje', 16, 1)
+        end
+    else if not exists (select * from Languages where Language = @Language)
+        begin
+            raiserror('Język nie istnieje', 16, 1)
+        end
+    else if not exists (select * from Studies where FieldOfStudy = @Study)
+        begin
+            raiserror('Kierunek nie istnieje', 16, 1)
+        end
+    else if @BeginningDate <= getdate()
+        begin
+            raiserror('Data rozpoczęcia musi być późniejsza niż dzisiejsza', 16, 1)
+        end
+    else
+        begin
+            insert into StudyMeetings (StudyID, Type, TeacherID, LanguageID, MeetingName, MeetingPrice, MeetingPriceForStudents, BeginningDate, Duration, MeetingSyllabusDescription, SeatCount, TranslatorName, TranslatorSurname)
+            values ((select StudyID from Studies where FieldOfStudy = @Study), @Type, @TeacherID, (select LanguageID from Languages where Languages.LanguageID = @Language), @MeetingName, @MeetingPrice, @MeetingPriceForStudents, @BeginningDate, @Duration, @Syllabus, @Limit, @TranslatorName, @TranslatorSurname)
+        end
+END
+```
+
+```sql
+ALTER PROCEDURE [dbo].[InsertStudies]
+    @FieldOfStudy nvarchar(50),
+    @Duration int,
+    @EntryFee money,
+    @AcademicYear int,
+    @Limit int,
+    @Syllabus nvarchar(max),
+    @InternshipName nvarchar(50),
+    @InternshipStartDate datetime
+AS
+BEGIN
+    if @AcademicYear >= YEAR(getdate())
+        begin
+            insert into Studies (FieldOfStudy, Duration, EntryFee, AcademicYear, Limit, SyllabusDescription, InternshipName, InternshipStartDate)
+            values (@FieldOfStudy, @Duration, @EntryFee, @AcademicYear, @Limit, @Syllabus, @InternshipName, @InternshipStartDate)
+        end
+END
+```
+
+```sql
+ALTER PROCEDURE [dbo].[InsertWebinars]
+    @TeacherId INT,
+    @Name NVARCHAR(50),
+    @Price MONEY,
+    @Hyperlink NVARCHAR(100),
+    @Language NVARCHAR(50),
+    @TranslatorName NVARCHAR(50),
+    @TranslatorSurname NVARCHAR(50),
+    @StartDate DATETIME,
+    @Duration TIME
+AS
+BEGIN
+    -- sprawdzamy czy nauczyciel istnieje
+    if not exists (select * from Teachers where TeacherId = @TeacherId)
+        begin
+            raiserror('Nauczyciel nie istnieje', 16, 1)
+        end
+    else
+        begin
+            -- sprawdzamy czy jezyk istnieje
+            if not exists (select * from Languages where Language = @Language)
+                begin
+                    raiserror('Język nie istnieje', 16, 1)
+                end
+            else
+                begin
+                    -- sprawdzamy czy data jest wieksza od dzisiejszej
+                    if @StartDate <= GETDATE()
+                        begin
+                            raiserror('Data startu musi byc po dniu dzisiajeszym', 16, 1)
+                        end
+                    else
+                        begin
+                            insert into Webinars (TeacherId, Name, Price, Hyperlink, LanguageID, TranslatorName, TranslatorSurname, StartDate, Duration)
+                            values (@TeacherId, @Name, @Price, @Hyperlink, (select LanguageID from Languages where Language = @Language), @TranslatorName, @TranslatorSurname, @StartDate, @Duration)
+                        end
+                end
+        end
+END
+```
