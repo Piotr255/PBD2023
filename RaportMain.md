@@ -59,7 +59,7 @@ pbd_<14>_raport4 | Piotr Albiński, Adam Konior, Mateusz Maciaszczyk
   - weryfikowanie przekroczenia limitu miejsc: kursy hybrydowe i stacjonarne.
 
 
-<img src="ScreenShot bazy raport 4.png">
+<img src="newest1.png">
 
 ## Skrypty tworzenia tabel:
 
