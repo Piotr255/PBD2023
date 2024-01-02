@@ -1002,3 +1002,420 @@ FROM   dbo.OrderedWebinars RIGHT OUTER JOIN
              dbo.Webinars ON dbo.OrderedWebinars.WebinarID = dbo.Webinars.WebinarID
 GROUP BY dbo.Webinars.WebinarID, dbo.Webinars.Name, dbo.Webinars.Price
 ```
+
+
+## Procedury
+
+```sql
+ALTER PROCEDURE [dbo].[AddCourseToBasket]
+	@OrderID nvarchar(50), 
+	@StudentID int,
+	@CourseID int,
+	@PaymentHyperlink nvarchar(MAX)
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SET XACT_ABORT ON
+    
+	DECLARE @date_ok bit; -- weryfikujemy, czy na pewno nadal można kupić kurs(trzeba dokonać wpłaty na 3 dni przed 
+	-- rozpoczęciem kursu)
+	SELECT @date_ok = CASE 
+						WHEN DATEDIFF(second, GETDATE(), StartDate) > 259200 THEN 1 -- 259200s = 72h = 3 dni
+						ELSE 0
+						END
+					FROM 
+					Courses
+					WHERE CourseID=@CourseID;
+
+	IF (@date_ok=0)
+	BEGIN
+		RAISERROR ('Za późno na kupienie tego kursu',16,1) WITH NOWAIT;
+	END;
+	-- weryfikujemy, czy podany kurs i student istnieją
+	IF ((select count(CourseID) from Courses where CourseID=@CourseID) > 0) AND 
+		((select count(StudentID) from Students where StudentID=@StudentID) > 0)
+	BEGIN
+		INSERT INTO Orders (OrderID, StudentID, Status, AdditionToBasketDate, PaymentHyperlink)
+		VALUES (@OrderID, @StudentID, 'Pending', GETDATE(), @PaymentHyperlink);
+		INSERT INTO OrderedCourses (OrderID, CourseID, HasBeenPaidFor)
+		VALUES (@OrderID, @CourseID, 0);
+	END
+	ELSE
+	BEGIN
+		RAISERROR ('Nie istnieje Kurs albo Student o takim ID',16,1);
+	END
+END
+```
+
+```sql
+ALTER PROCEDURE [dbo].[AddStudyMeetingToBasket]
+	@OrderID nvarchar(50), 
+	@StudentID int,
+	@StudyMeetingID int,
+	@isPartOfStudies bit,
+	@PaymentHyperlink nvarchar(MAX)
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SET XACT_ABORT ON
+    -- Insert statements for procedure here
+	DECLARE @date_ok bit; -- weryfikujemy, czy na pewno nadal można kupić studium(trzeba dokonać wpłaty na 3 dni przed 
+	-- rozpoczęciem)
+	SELECT @date_ok = CASE 
+						WHEN DATEDIFF(day, BeginningDate, GETDATE()) > 3 THEN 1
+						ELSE 0
+						END
+					FROM 
+					StudyMeetings
+					WHERE StudyMeetingID=@StudyMeetingID;
+
+	IF (@date_ok=0)
+	BEGIN
+		RAISERROR ('Za późno na kupienie tego kursu',16,1) WITH NOWAIT;
+	END;
+	-- sprawdzamy czy takie studium i taki student istnieją
+	IF ((select count(StudyID) from StudyMeetings where StudyMeetingID=@StudyMeetingID ) > 0) AND 
+		((select count(StudentID) from Students where StudentID=@StudentID) > 0)
+	BEGIN
+		INSERT INTO Orders (OrderID, StudentID, Status, AdditionToBasketDate, PaymentHyperlink)
+		VALUES (@OrderID, @StudentID, 'Pending', GETDATE(), @PaymentHyperlink);
+		INSERT INTO OrderedStudyMeetings(OrderID, StudyMeetingID, HasBeenPaidFor, IsPartOfStudies)
+		VALUES (@OrderID, @StudyMeetingID, 0, @isPartOfStudies);
+	END
+	ELSE
+	BEGIN
+		RAISERROR ('Nie istnieje Zjazd albo Student o takim ID',16,1) WITH NOWAIT;
+	END
+END
+```
+
+```sql
+ALTER PROCEDURE [dbo].[AddStudyToBasket] 
+	@OrderID nvarchar(50), 
+	@StudentID int,
+	@StudyID int,
+	@PaymentHyperlink nvarchar(MAX)
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SET XACT_ABORT ON
+    -- Insert statements for procedure here
+	-- sprawdzamy, czy takie studium i taki student istnieją
+	IF ((select count(StudyID) from Studies where StudyID=@StudyID) > 0) AND 
+		((select count(StudentID) from Students where StudentID=@StudentID) > 0)
+	BEGIN
+		INSERT INTO Orders (OrderID, StudentID, Status, AdditionToBasketDate, PaymentHyperlink)
+		VALUES (@OrderID, @StudentID, 'Pending', GETDATE(), @PaymentHyperlink);
+		INSERT INTO OrderedStudies (OrderID, StudyID, EntryFeePaid)
+		VALUES (@OrderID, @StudyID, 0);
+	END
+	ELSE
+	BEGIN
+		RAISERROR ('Nie istnieje Studium albo Student o takim ID',16,1) WITH NOWAIT;
+	END
+END
+```
+
+```sql
+ALTER PROCEDURE [dbo].[AddWebinarToBasket] 
+	@WebinarID int, 
+	@StudentID int,
+	@OrderID nvarchar(50),
+	@PaymentHyperlink nvarchar(MAX)
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SET XACT_ABORT ON
+    -- Insert statements for procedure here
+	-- sprawdzamy, czy taki webinar i taki student istnieją
+	IF ((select count(WebinarID) from Webinars where WebinarID=@WebinarID) > 0) AND 
+		((select count(StudentID) from Students where StudentID=@StudentID) > 0)
+	BEGIN
+		INSERT INTO Orders (OrderID, StudentID, Status, AdditionToBasketDate, PaymentHyperlink)
+		VALUES (@OrderID, @StudentID, 'Pending', GETDATE(), @PaymentHyperlink);
+		INSERT INTO OrderedWebinars (OrderID, WebinarID, HasBeenPaidFor)
+		VALUES (@OrderID, @WebinarID, 0);
+	END
+	ELSE
+	BEGIN
+		RAISERROR ('Nie istnieje Webinar albo Student o takim ID',16,1) WITH NOWAIT;
+	END
+END
+```
+
+```sql
+ALTER PROCEDURE [dbo].[DeliverTheOrder]
+	@order_id nvarchar(50),
+	@payment_deferral bit,
+	@payment_deferral_reason nvarchar(MAX)
+AS
+BEGIN
+	SET NOCOUNT ON;
+	
+    -- Insert statements for procedure here
+	DECLARE @current_status nvarchar(50);
+	SELECT @current_status = Status
+								from Orders
+								where OrderID=@order_id;
+	if (@current_status='Pending')
+	BEGIN
+		UPDATE Orders
+		SET Status='Delivered', OrderDate=GETDATE()
+		WHERE OrderID=@order_id;
+	
+		UPDATE OrderedWebinars
+		SET PaymentDeferral=@payment_deferral, PaymentDeferralReason=@payment_deferral_reason
+		WHERE OrderID=@order_id;
+
+		UPDATE OrderedCourses
+		SET PaymentDeferral=@payment_deferral, PaymentDeferralReason=@payment_deferral_reason,
+		IsGrantedCertificate=0
+		WHERE OrderID=@order_id;
+
+		UPDATE OrderedStudies
+		SET PaymentDeferral=@payment_deferral, PaymentDeferralReason=@payment_deferral_reason,
+		IsGrantedCertificate=0, FinalExamPassed=0, FailedInternship=0
+		WHERE OrderID=@order_id;
+
+		UPDATE OrderedStudyMeetings
+		SET PaymentDeferral=@payment_deferral, PaymentDeferralReason=@payment_deferral_reason
+		WHERE OrderID=@order_id;
+	END;
+END
+```
+
+```sql
+ALTER PROCEDURE [dbo].[GrantStudentCertificate]
+	@student_id int,
+	@certificate_hyperlink nvarchar(MAX),
+	@study_id int
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SET XACT_ABORT ON
+    -- Insert statements for procedure here
+	-- Najpierw sprawdzamy, czy student zamówił studium o takim @study_id
+	DECLARE @ordered_study_exists bit;
+	SELECT @ordered_study_exists = CASE
+									WHEN count(StudyID) > 0 then 1
+									else 0
+								  END
+									from OrderedStudies
+									join Orders on Orders.OrderID=OrderedStudies.OrderID
+									where Orders.StudentID=@student_id and OrderedStudies.StudyID=@study_id;
+	-- Teraz liczymy ilość wszystkich spotkań i ilość niedrobionych absencji danego studenta na danym studium 
+	DECLARE @total_study_meetings_count decimal;
+	SELECT @total_study_meetings_count = count(StudyMeetingID) from StudyMeetings
+										where StudyID=@study_id;
+	DECLARE @absences_count decimal;
+	SELECT @absences_count = count(StudyMeetingsAbsences.StudyMeetingID)
+								from StudyMeetingsAbsences
+								join StudyMeetings on StudyMeetings.StudyMeetingID = StudyMeetingsAbsences.StudyMeetingID
+								where StudentID=@student_id and StudyID=@study_id and HasBeenCaughtUp=0;
+	-- Sprawdzamy, czy student zdał egzamin końcowy z danego studium i czy zaliczył praktyki
+	DECLARE @final_exam_passed bit;
+	SELECT @final_exam_passed = FinalExamPassed
+								from OrderedStudies
+								join Orders on Orders.OrderID = OrderedStudies.OrderID
+								where StudyID=@study_id and StudentID=@student_id; 
+	DECLARE @failed_internship bit;
+	SELECT @failed_internship = FailedInternship
+								from OrderedStudies
+								join Orders on Orders.OrderID = OrderedStudies.OrderID
+								where StudyID=@study_id and StudentID=@student_id;
+	-- Sprawdzamy dodatkowo, czy student opłacił wszelkie spotkania studyjne
+	DECLARE @everything_paid bit;
+	SELECT @everything_paid = CASE 
+								WHEN COUNT(*) > 0 THEN 0
+								ELSE 1
+							  END
+								from OrderedStudies
+								join Orders on Orders.OrderID = OrderedStudies.OrderID
+								join OrderedStudyMeetings on OrderedStudyMeetings.OrderID = Orders.OrderID
+								where StudentID=@student_id and StudyID=@study_id and HasBeenPaidFor=0;
+	-- Trzeba jeszcze sprawdzić, czy student uiścił wpisowe
+	DECLARE @entry_fee_paid bit;
+	SELECT @entry_fee_paid = CASE 
+								WHEN EntryFeePaid=1 THEN 1
+								ELSE 0
+							  END
+								from OrderedStudies
+								join Orders on Orders.OrderID=OrderedStudies.OrderID
+								where StudentID=@student_id and StudyID=@study_id;
+	-- Ostateczna walidacja
+	IF (@ordered_study_exists=1 and @total_study_meetings_count > 0 and @absences_count/@total_study_meetings_count<=0.2
+		and @final_exam_passed=1 and @failed_internship=0 and @everything_paid=1 and @entry_fee_paid=1)
+	BEGIN
+		UPDATE OrderedStudies
+		SET IsGrantedCertificate=1,
+			CertificateHyperlink=@certificate_hyperlink
+		FROM OrderedStudies
+		join Orders on Orders.OrderID = OrderedStudies.OrderID
+		where StudentID=@student_id and StudyID=@study_id;
+	END;
+	ELSE
+	BEGIN
+		RAISERROR ('Student nie spełnia kryteriów otrzymania certyfikatu z tego studium',16,1);
+	END;
+END
+```
+
+```sql
+ALTER PROCEDURE [dbo].[InsertEmployees]
+    @Email nvarchar(50),
+    @Password nvarchar(50),
+    @Name nvarchar(50),
+    @Surname nvarchar(50),
+    @Country nvarchar(50),
+    @City nvarchar(50),
+    @ZipCode nvarchar(50),
+    @Street nvarchar(50),
+    @Address nvarchar(50),
+    @Phone nvarchar(50),
+    @type nvarchar(50)
+AS
+BEGIN
+    insert into Users(Email, Password, Name, Surname, CountryID, CityID, ZipCode, Street, Address, PhoneNumber)
+    values (@Email, @Password, @Name, @Surname, (select CountryID from Countries where CountryName = @Country), (select CityID from City where CityName = @City), @ZipCode, @Street, @Address, @Phone);
+    insert into Employees(EmployeeID, type) values ((select UserID from Users where Email = @Email), @type);
+END
+```
+
+```sql
+ALTER PROCEDURE [dbo].[InsertStudents]
+    @Email nvarchar(50),
+    @Password nvarchar(50),
+    @Name nvarchar(50),
+    @Surname nvarchar(50),
+    @Country nvarchar(50),
+    @City nvarchar(50),
+    @ZipCode nvarchar(50),
+    @Street nvarchar(50),
+    @Address nvarchar(50),
+    @Phone nvarchar(50)
+AS
+BEGIN
+    insert into Users(Email, Password, Name, Surname, CountryID, CityID, ZipCode, Street, Address, PhoneNumber)
+    values (@Email, @Password, @Name, @Surname, (select CountryID from Countries where CountryName = @Country), (select CityID from City where CityName = @City), @ZipCode, @Street, @Address, @Phone);
+    insert into Students(StudentID) values ((select UserID from Users where Email = @Email));
+END
+```
+
+```sql
+ALTER PROCEDURE [dbo].[InsertTeachers]
+    @Email nvarchar(50),
+    @Password nvarchar(50),
+    @Name nvarchar(50),
+    @Surname nvarchar(50),
+    @Country nvarchar(50),
+    @City nvarchar(50),
+    @ZipCode nvarchar(50),
+    @Street nvarchar(50),
+    @Address nvarchar(50),
+    @Phone nvarchar(50)
+AS
+BEGIN
+    insert into Users(Email, Password, Name, Surname, CountryID, CityID, ZipCode, Street, Address, PhoneNumber)
+    values (@Email, @Password, @Name, @Surname, (select CountryID from Countries where CountryName = @Country), (select CityID from City where CityName = @City), @ZipCode, @Street, @Address, @Phone);
+    insert into Teachers(TeacherID) values ((select UserID from Users where Email = @Email));
+END
+```
+
+```sql
+ALTER PROCEDURE [dbo].[PayForProduct]
+	@product_type nvarchar(50),
+	@product_id int,
+	@student_id int,
+	@payment_auth_code nvarchar(50),
+	@error nvarchar(MAX)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+    -- Insert statements for procedure here
+	-- Ta procedura jest wywoływana w momencie zatwierdzenia płatności przez naszą aplikację.
+	-- 
+	IF (@product_type='webinar')
+	BEGIN
+		UPDATE OrderedWebinars
+		SET HasBeenPaidFor=1, PaymentAuthCode=@payment_auth_code, Error=@error
+		FROM OrderedWebinars
+		JOIN Orders on OrderedWebinars.OrderID=Orders.OrderID
+		WHERE WebinarID=@product_id and StudentID=@student_id;
+
+	END;
+	ELSE IF (@product_type='course')
+	BEGIN
+		UPDATE OrderedCourses
+		SET HasBeenPaidFor=1, PaymentAuthCode=@payment_auth_code, Error=@error
+		FROM OrderedCourses
+		JOIN Orders on OrderedCourses.OrderID=Orders.OrderID
+		WHERE CourseID=@product_id and StudentID=@student_id;
+
+	END;
+	ELSE IF (@product_type='study')
+	BEGIN
+		UPDATE OrderedStudies
+		SET EntryFeePaid=1, PaymentAuthCode=@payment_auth_code, Error=@error
+		FROM OrderedStudies
+		JOIN Orders on OrderedStudies.OrderID=Orders.OrderID
+		WHERE StudyID=@product_id and StudentID=@student_id;
+
+	END;
+	ELSE IF (@product_type='study_meeting')
+	BEGIN
+		UPDATE OrderedStudyMeetings
+		SET HasBeenPaidFor=1, PaymentAuthCode=@payment_auth_code, Error=@error
+		FROM OrderedStudyMeetings
+		JOIN Orders on OrderedStudyMeetings.OrderID=Orders.OrderID
+		WHERE StudyMeetingID=@product_id and StudentID=@student_id;
+
+	END;
+	ELSE
+	BEGIN
+		RAISERROR ('Podano bledny typ produktu',16,1);
+	END
+END
+```
+
+```sql
+ALTER PROCEDURE [dbo].[RegisterModuleAbsence]
+	@module_id int,
+	@student_id int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+    -- Insert statements for procedure here
+	-- Sprawdzamy, czy dany student zamówił kurs z danym modułem
+	IF ((SELECT COUNT(*) FROM OrderedCourses
+						JOIN Courses on Courses.CourseID=OrderedCourses.CourseID
+						JOIN CoursesModules on Courses.CourseID=CoursesModules.CourseID
+						JOIN Orders on Orders.OrderID = OrderedCourses.CourseID
+						WHERE ModuleID=@module_id AND StudentID=@student_id) > 0)
+	BEGIN
+		INSERT INTO ModulesAbsences (ModuleID, StudentID)
+		VALUES (@module_id, @student_id);
+	END;
+END
+```
+
+```sql
+ALTER PROCEDURE [dbo].[RegisterStudyMeetingAbsence]
+	@student_id int,
+	@study_meeting_id int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+    -- Insert statements for procedure here
+	-- sprawdzamy, czy dany student zamówił dane spotkanie studyjne
+	IF ((SELECT COUNT(*) FROM OrderedStudyMeetings
+						JOIN Orders on Orders.OrderID = OrderedStudyMeetings.OrderID
+						WHERE StudyMeetingID=@study_meeting_id AND StudentID=@student_id) > 0)
+	BEGIN
+		INSERT INTO StudyMeetingsAbsences (StudyMeetingID, StudentID, HasBeenCaughtUp)
+		VALUES (@study_meeting_id, @student_id, 0);
+	END
+END
+```
