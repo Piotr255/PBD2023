@@ -1,4 +1,24 @@
 treść zadania -> pozostałe informacje -> punkt 5:
 - mamy dosłownie wysłać dyplom na podanego maila?
 
-w jaki sposób weryfikowane jest wpłacenie kosztów kursów i studiów? czy przed wejściem nad studia i kursy stacjonarne stoi ochroniarz, który sprawdza, czy dana osoba zapłaciła
+w jaki sposób weryfikowane jest wpłacenie kosztów kursów i studiów? czy przed wejściem na studia i kursy stacjonarne stoi ochroniarz, który sprawdza, czy dana osoba zapłaciła
+
+system dłużników - czy nasz jest ok?
+
+co dalej robić?
+
+- nasz system dłużników
+- payment hyperlink
+- schemat
+- procedury modyfikacji
+- w jakim zakresie robić procedury spoza wymagań
+
+
+- nie dodawać kolejnych orderów do Orders(osobna procedura dla stworzenia koszyka)
+
+- try/catch zamiast raiserror / throw !!
+- komentarze
+- wszędzie komunikaty
+- czy komunikaty osobne?
+- transakcje w procedurach
+
