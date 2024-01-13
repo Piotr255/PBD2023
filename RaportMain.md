@@ -1611,6 +1611,8 @@ BEGIN
 END
 ```
 
+## InsertEmployees
+Procedura wstawiania pracowników
 ```sql
 ALTER PROCEDURE [dbo].[InsertEmployees]
     @Email nvarchar(50),
@@ -1632,6 +1634,8 @@ BEGIN
 END
 ```
 
+## InsertStudents
+Procedura wstawiania studentów
 ```sql
 ALTER PROCEDURE [dbo].[InsertStudents]
     @Email nvarchar(50),
@@ -1652,6 +1656,8 @@ BEGIN
 END
 ```
 
+## InsertTeachers
+Procedura wstawiania nauczycieli
 ```sql
 ALTER PROCEDURE [dbo].[InsertTeachers]
     @Email nvarchar(50),
@@ -1727,7 +1733,8 @@ BEGIN
 		RAISERROR ('Student nie zamowil tego zjazdu',16,1);
 END
 ```
-
+# InsertCourses
+Procedura służąca do wstawiania kursów do bazy
 ```sql
 ALTER PROCEDURE [dbo].[InsertCourses]
     @Name NVARCHAR(50),
@@ -1763,6 +1770,8 @@ BEGIN
 END
 ```
 
+# InsertStudyMeetings
+Procedura służąca do wstawiania spotkań w ramach studiów do bazy
 ```sql
 ALTER PROCEDURE [dbo].[InsertStudieMeetings]
     @Study nvarchar(50),
@@ -1804,6 +1813,8 @@ BEGIN
 END
 ```
 
+#InsertStudies
+Procedura służąca do wstawiania studiów do bazy
 ```sql
 ALTER PROCEDURE [dbo].[InsertStudies]
     @FieldOfStudy nvarchar(50),
@@ -1824,6 +1835,8 @@ BEGIN
 END
 ```
 
+# InsertWebinars
+Procedura służąca do wstawiania webinarów do bazy
 ```sql
 ALTER PROCEDURE [dbo].[InsertWebinars]
     @TeacherId INT,
@@ -1866,6 +1879,28 @@ BEGIN
 END
 ```
 
+## Triggery:
+
+# UpdateStudyLimit
+Po dodaniu nowego spotkania w ramach studiów trigger aktualizuje limit miejsc na studiach, żeby limit na studia był mniejszy lub równy niż każdy z pośród spotkań, z których się składa
+```sql
+CREATE TRIGGER UpdateStudyLimit
+ON StudyMeetings
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE Studies
+    SET Limit = i.SeatCount
+    FROM inserted i
+    INNER JOIN Studies s ON i.StudyID = s.StudyID
+    WHERE s.Limit > i.SeatCount;
+END
+GO
+
+```
+
 ## Role:
 
 # Teacher (nauczyciel)
@@ -1877,4 +1912,64 @@ END
 grant execute on RegisterStudyMeetingAbsence to Teacher
 grant execute on RegisterModuleAbsence to Teacher
 grant execute on RegisterCaughtUpStudyMeetingAbsence to Teacher
+```
+
+# Employee (pracownik biura)
+
+- Generuje certyfikaty
+- Wstawia kursy, webinary i studia do bazy
+- Wstawia nowych pracowników, studentów i nauczycieli do bazy
+- Generuje raporty finansowe
+- Generuje raporty dłużników
+- Sprawdza frekwencje studentów
+
+```sql
+create role employee
+grant execute on GrantStudentCertificate to employee
+grant execute on InsertCourses to employee
+grant execute on InsertStudies to employee
+grant execute on InsertWebinars to employee
+grant execute on InsertStudent to employee
+grant execute on InsertEmployees to employee
+grant execute on InsertTeachers to employee
+grant execute on InsertStudyMeetings to employee
+grant execute on SelectAllCustomers to employee
+grant select on n1_CoursesFinancialReport to employee
+grant select on n1_WebinarsFinancialReport to employee
+grant select on n1_MeetingsNoStudiesFinancialReport to employee
+grant select on n_1_StudiesFinancialReport to employee
+grant select on n_FrekwencjaSzczegółowaMeetings to employee
+grant select on n_RaportDotyczącyLiczbyOsóbNaCoursesModules to employee
+grant select on n_RaportDotyczącyLiczbyOsóbNaWebinars to employee
+grant select on n_RaportDotyczącyLiczbyOsóbNaMeetings to employee
+grant select on RaportDotyczącyLiczbyOsóbNaWebinars to employee
+grant select on n_RaportFrekwencjiMeetings to employee
+grant select on n_RaportFrekwencjiModules to employee
+grant select on n_RaportDłużnikówCourses to employee
+grant select on n_RaportDłużnikówStudies to employee
+grant select on n_RaportDłużnikówWebinars to employee
+grant select on n_RaportDłużnikówStudyMeetingsNieStudium to employee
+grant select on n_RaportFinansowyCourses to employee
+grant select on n_RaportFinansowyStudies to employee
+grant select on n_RaportFinansowyWebinars to employee
+```
+
+# Director (dyrektor)
+
+- Odroczenie płatności
+- Generowanie raportów finansowych
+- Generowanie raportów dłużników
+
+```sql
+create role Director
+grant execute on ApplyPaymentDeferralToOrderedProduct to Director
+grant execute on SelectAllCustomers to Director
+grant select on n1_CoursesFinancialReport to Director
+grant select on n1_WebinarsFinancialReport to Director
+grant select on n1_MeetingsNoStudiesFinancialReport to Director
+grant select on n_1_StudiesFinancialReport to Director
+grant select on n_RaportDłużnikówCourses to Director
+grant select on n_RaportDłużnikówStudies to Director
+grant select on n_RaportDłużnikówWebinars to Director
+grant select on n_RaportDłużnikówStudyMeetingsNieStudium to Director
 ```
