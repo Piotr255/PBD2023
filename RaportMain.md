@@ -1909,11 +1909,26 @@ GO
 - Rejestruje odrobienie nieobecności przez studenta
 
 ```sql
+create role Teacher
 grant execute on RegisterStudyMeetingAbsence to Teacher
 grant execute on RegisterModuleAbsence to Teacher
 grant execute on RegisterCaughtUpStudyMeetingAbsence to Teacher
 ```
 
+# Student
+
+- Zamawia produkty
+- Otrzymuje je
+- Płaci za produkty
+
+```sql
+create role Student
+grant execute on AddCourseToBasket to Student
+grant execute on AddStudyMeetingToBasket to Student
+grant execute on AddStudyToBasket to Student
+grant execute on AddWebinarToBasket to Student
+grant execute on DeliverTheOrder to Student
+grant execute on PayForProduct to Student
 # Employee (pracownik biura)
 
 - Generuje certyfikaty
