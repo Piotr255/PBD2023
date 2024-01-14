@@ -885,211 +885,377 @@ Dłużnikiem jest osoba, która dany produkt zamówiła, nie spełnia odpowiedni
 
 ## Raport dłużników Courses
 ```sql
-CREATE VIEW [dbo].[n_RaportDłużnikówCourses]
+
+CREATE VIEW [dbo].[n_1_CoursesDebtorReport]
 AS
-SELECT        dbo.Students.StudentID, dbo.OrderedCourses.HasBeenPaidFor, GETDATE() AS CurrentDate, dbo.Courses.StartDate
-FROM            dbo.Courses INNER JOIN
-                         dbo.OrderedCourses ON dbo.Courses.CourseID = dbo.OrderedCourses.CourseID INNER JOIN
-                         dbo.Orders ON dbo.OrderedCourses.OrderID = dbo.Orders.OrderID INNER JOIN
-                         dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID
-WHERE        (dbo.OrderedCourses.PaymentDeferral = 0) AND (DATEDIFF(day, GETDATE(), dbo.Courses.StartDate) <= 3) AND (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedCourses.HasBeenPaidFor = 0)
+SELECT dbo.Courses.Name, dbo.Courses.CourseID, dbo.Students.StudentID, dbo.Users.Name AS Expr1, dbo.Users.Surname, dbo.OrderedCourses.HasBeenPaidFor, dbo.Courses.StartDate AS CourseStartDate, dbo.OrderedCourses.PaymentDeferral, dbo.Courses.Price AS Money
+FROM   dbo.Courses INNER JOIN
+             dbo.OrderedCourses ON dbo.Courses.CourseID = dbo.OrderedCourses.CourseID INNER JOIN
+             dbo.Orders ON dbo.OrderedCourses.OrderID = dbo.Orders.OrderID INNER JOIN
+             dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID INNER JOIN
+             dbo.Users ON dbo.Students.StudentID = dbo.Users.UserID
+WHERE (dbo.OrderedCourses.PaymentDeferral = 0) AND (DATEDIFF(day, GETDATE(), dbo.Courses.StartDate) <= 3) AND (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedCourses.HasBeenPaidFor = 0)
 ```
+<img src="/PBD2023/Reportexamples/n_1_CoursesDebtorReport_example.png">
+
 
 ## Raport dłużników Studies
 ```sql
-CREATE VIEW [dbo].[n_RaportDłużnikówStudies]
+CREATE VIEW [dbo].[n_1_StudiesDebtorReport]
 AS
-SELECT        dbo.Students.StudentID
-FROM            dbo.OrderedStudies INNER JOIN
-                         dbo.Studies ON dbo.OrderedStudies.StudyID = dbo.Studies.StudyID INNER JOIN
-                         dbo.StudyMeetings ON dbo.Studies.StudyID = dbo.StudyMeetings.StudyID INNER JOIN
-                         dbo.OrderedStudyMeetings ON dbo.StudyMeetings.StudyMeetingID = dbo.OrderedStudyMeetings.StudyMeetingID INNER JOIN
-                         dbo.Orders ON dbo.OrderedStudies.OrderID = dbo.Orders.OrderID AND dbo.OrderedStudyMeetings.OrderID = dbo.Orders.OrderID INNER JOIN
-                         dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID
-WHERE        (dbo.OrderedStudies.PaymentDeferral = 0) AND (dbo.OrderedStudies.EntryFeePaid = 0) AND (dbo.Orders.Status = 'Delivered') OR
-                         (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedStudyMeetings.IsPartOfStudies = 1) AND (dbo.OrderedStudyMeetings.PaymentDeferral = 0) AND (DATEDIFF(day, GETDATE(), dbo.StudyMeetings.BeginningDate) <= 3) AND 
-                         (dbo.OrderedStudyMeetings.HasBeenPaidFor = 1)
+SELECT dbo.Orders.StudentID, dbo.Users.Name, dbo.Users.Surname, dbo.Studies.EntryFee, dbo.OrderedStudies.EntryFeePaid, dbo.OrderedStudies.PaymentDeferral, dbo.Studies.AcademicYear
+FROM   dbo.OrderedStudies INNER JOIN
+             dbo.Orders ON dbo.OrderedStudies.OrderID = dbo.Orders.OrderID INNER JOIN
+             dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID INNER JOIN
+             dbo.Users ON dbo.Students.StudentID = dbo.Users.UserID INNER JOIN
+             dbo.Studies ON dbo.OrderedStudies.StudyID = dbo.Studies.StudyID
+WHERE (dbo.OrderedStudies.PaymentDeferral = 0) AND (dbo.OrderedStudies.EntryFeePaid = 0) AND (dbo.Orders.Status = 'Delivered')
 ```
+<img src="/PBD2023/Reportexamples/n_1_StudiesDebtorReport_example.png">
+
 ## Raport dłużników StudyMeetings bez studium
 ```sql
-CREATE VIEW [dbo].[n_RaportDłużnikówStudyMeetingsNieStudium]
+CREATE VIEW [dbo].[n_1_MeetingsNoStudiesDebtorReport]
 AS
-SELECT        dbo.Students.StudentID, dbo.OrderedStudyMeetings.HasBeenPaidFor
-FROM            dbo.Orders INNER JOIN
-                         dbo.OrderedStudyMeetings ON dbo.Orders.OrderID = dbo.OrderedStudyMeetings.OrderID INNER JOIN
-                         dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID INNER JOIN
-                         dbo.StudyMeetings ON dbo.OrderedStudyMeetings.StudyMeetingID = dbo.StudyMeetings.StudyMeetingID
-WHERE        (dbo.OrderedStudyMeetings.IsPartOfStudies = 0) AND (dbo.OrderedStudyMeetings.PaymentDeferral = 0) AND (DATEDIFF(day, GETDATE(), dbo.StudyMeetings.BeginningDate) <= 3) AND (dbo.Orders.Status = 'Delivered') AND 
-                         (dbo.OrderedStudyMeetings.HasBeenPaidFor = 0)
+SELECT dbo.StudyMeetings.MeetingName, dbo.StudyMeetings.StudyMeetingID, dbo.Students.StudentID, dbo.Users.Name, dbo.Users.Surname, dbo.OrderedStudyMeetings.HasBeenPaidFor, dbo.StudyMeetings.BeginningDate AS StudyMeetingsBeginningDate, 
+             dbo.OrderedStudyMeetings.PaymentDeferral, dbo.StudyMeetings.MeetingPrice AS Money
+FROM   dbo.Orders INNER JOIN
+             dbo.OrderedStudyMeetings ON dbo.Orders.OrderID = dbo.OrderedStudyMeetings.OrderID INNER JOIN
+             dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID INNER JOIN
+             dbo.StudyMeetings ON dbo.OrderedStudyMeetings.StudyMeetingID = dbo.StudyMeetings.StudyMeetingID INNER JOIN
+             dbo.Users ON dbo.Students.StudentID = dbo.Users.UserID
+WHERE (dbo.OrderedStudyMeetings.IsPartOfStudies = 0) AND (dbo.OrderedStudyMeetings.PaymentDeferral = 0) AND (DATEDIFF(day, GETDATE(), dbo.StudyMeetings.BeginningDate) <= 3) AND (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedStudyMeetings.HasBeenPaidFor = 0)
 ```
+<img src="/PBD2023/Reportexamples/n_1_MeetingsNoStudiesDebtorReport_example.png">
+
+
+
+
 ## Raport dłużników Webinars
 ```sql
-CREATE VIEW [dbo].[n_RaportDłużnikówWebinars]
+CREATE VIEW [dbo].[n_1_WebinarsDebtorReport]
 AS
-SELECT        dbo.Students.StudentID, dbo.OrderedWebinars.HasBeenPaidFor, GETDATE() AS CurrentDate, dbo.Webinars.StartDate, dbo.OrderedWebinars.PaymentDeferral
-FROM            dbo.OrderedWebinars INNER JOIN
-                         dbo.Orders ON dbo.OrderedWebinars.OrderID = dbo.Orders.OrderID INNER JOIN
-                         dbo.Webinars ON dbo.OrderedWebinars.WebinarID = dbo.Webinars.WebinarID INNER JOIN
-                         dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID
-WHERE        (dbo.Webinars.StartDate < GETDATE()) AND (dbo.OrderedWebinars.PaymentDeferral = 0) AND (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedWebinars.HasBeenPaidFor = 0)
+SELECT dbo.Webinars.WebinarID, dbo.Webinars.Name, dbo.Students.StudentID, dbo.Users.Name AS StudentName, dbo.Users.Surname, dbo.OrderedWebinars.HasBeenPaidFor, dbo.Webinars.StartDate AS WebinarStartDate, dbo.OrderedWebinars.PaymentDeferral, 
+             dbo.Webinars.Price AS Money
+FROM   dbo.OrderedWebinars INNER JOIN
+             dbo.Orders ON dbo.OrderedWebinars.OrderID = dbo.Orders.OrderID INNER JOIN
+             dbo.Webinars ON dbo.OrderedWebinars.WebinarID = dbo.Webinars.WebinarID INNER JOIN
+             dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID INNER JOIN
+             dbo.Users ON dbo.Students.StudentID = dbo.Users.UserID
+WHERE (dbo.Webinars.StartDate < GETDATE()) AND (dbo.OrderedWebinars.PaymentDeferral = 0) AND (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedWebinars.HasBeenPaidFor = 0)
 ```
+<img src="/PBD2023/Reportexamples/n_1_WebinarsDebtorReport_example.png">
+
+
+
+
+
+## Raport dłużników StudyMeetings ze studium
+```sql
+CREATE VIEW [dbo].[n_1_MeetingsStudiesDebtorReport]
+AS
+SELECT dbo.StudyMeetings.MeetingName, dbo.StudyMeetings.StudyMeetingID, dbo.Students.StudentID, dbo.Users.Name, dbo.Users.Surname, dbo.OrderedStudyMeetings.HasBeenPaidFor, dbo.StudyMeetings.BeginningDate AS StudyMeetingsBeginningDate, 
+             dbo.OrderedStudyMeetings.PaymentDeferral, dbo.StudyMeetings.MeetingPriceForStudents AS Money
+FROM   dbo.Orders INNER JOIN
+             dbo.OrderedStudyMeetings ON dbo.Orders.OrderID = dbo.OrderedStudyMeetings.OrderID INNER JOIN
+             dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID INNER JOIN
+             dbo.StudyMeetings ON dbo.OrderedStudyMeetings.StudyMeetingID = dbo.StudyMeetings.StudyMeetingID INNER JOIN
+             dbo.Users ON dbo.Students.StudentID = dbo.Users.UserID
+WHERE (dbo.OrderedStudyMeetings.IsPartOfStudies = 1) AND (dbo.OrderedStudyMeetings.PaymentDeferral = 0) AND (DATEDIFF(day, GETDATE(), dbo.StudyMeetings.BeginningDate) <= 3) AND (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedStudyMeetings.HasBeenPaidFor = 0)
+```
+<img src="/PBD2023/Reportexamples/n_1_MeetingsStudiesDebtorReport_example.png">
+
 ## Raporty zapisanych.
 To, że ktoś jest zapisany na dany typ spotkania oznacza, że zamówił go i jego status to 'Delivered'.
 ## Raport zapisanych osób na CoursesModules
 ```sql
-CREATE VIEW [dbo].[n_RaportDotyczącyLiczbyOsóbNaCoursesModules]
+CREATE VIEW [dbo].[n_1_CoursesModulesPeopleCount]
 AS
-SELECT        dbo.CoursesModules.Type, COUNT(dbo.OrderedCourses.CourseID) AS [Liczba osob], dbo.CoursesModules.ModuleName
-FROM            dbo.Orders INNER JOIN
-                         dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID INNER JOIN
-                         dbo.OrderedCourses ON dbo.Orders.OrderID = dbo.OrderedCourses.OrderID INNER JOIN
-                         dbo.Courses ON dbo.OrderedCourses.CourseID = dbo.Courses.CourseID INNER JOIN
-                         dbo.CoursesModules ON dbo.Courses.CourseID = dbo.CoursesModules.CourseID
-WHERE        (dbo.CoursesModules.BeginningDate > GETDATE()) AND (dbo.Orders.Status = 'Delivered')
-GROUP BY dbo.Students.StudentID, dbo.OrderedCourses.CourseID, dbo.CoursesModules.Type, dbo.CoursesModules.ModuleName
+SELECT dbo.CoursesModules.Type, COUNT(dbo.OrderedCourses.CourseID) AS [Liczba osob], dbo.CoursesModules.ModuleName, dbo.CoursesModules.BeginningDate
+FROM   dbo.Orders INNER JOIN
+             dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID INNER JOIN
+             dbo.OrderedCourses ON dbo.Orders.OrderID = dbo.OrderedCourses.OrderID INNER JOIN
+             dbo.Courses ON dbo.OrderedCourses.CourseID = dbo.Courses.CourseID INNER JOIN
+             dbo.CoursesModules ON dbo.Courses.CourseID = dbo.CoursesModules.CourseID
+WHERE (dbo.Orders.Status = 'Delivered')
+GROUP BY dbo.OrderedCourses.CourseID, dbo.CoursesModules.Type, dbo.CoursesModules.ModuleName, dbo.CoursesModules.BeginningDate
 ```
+<img src="/PBD2023/Reportexamples/n_1_CoursesModulesPeopleCount_example.png">
+
 ## Raport zapisanych osób na Meetings
 ```sql
-CREATE VIEW [dbo].[n_RaportDotyczącyLiczbyOsóbNaMeetings]
+CREATE VIEW [dbo].[n_1_StudyMeetingsPeopleCount]
 AS
-SELECT        dbo.StudyMeetings.MeetingName, dbo.StudyMeetings.Type, COUNT(dbo.OrderedStudyMeetings.StudyMeetingID) AS [Liczba osob]
-FROM            dbo.OrderedStudyMeetings INNER JOIN
-                         dbo.StudyMeetings ON dbo.OrderedStudyMeetings.StudyMeetingID = dbo.StudyMeetings.StudyMeetingID INNER JOIN
-                         dbo.Orders ON dbo.OrderedStudyMeetings.OrderID = dbo.Orders.OrderID INNER JOIN
-                         dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID
-WHERE        (dbo.StudyMeetings.BeginningDate > GETDATE()) AND (dbo.Orders.Status = 'Delivered')
-GROUP BY dbo.OrderedStudyMeetings.StudyMeetingID, dbo.StudyMeetings.Type, dbo.StudyMeetings.MeetingName
+SELECT dbo.StudyMeetings.MeetingName, dbo.StudyMeetings.Type, COUNT(dbo.OrderedStudyMeetings.StudyMeetingID) AS [Liczba osob], dbo.StudyMeetings.BeginningDate
+FROM   dbo.OrderedStudyMeetings INNER JOIN
+             dbo.StudyMeetings ON dbo.OrderedStudyMeetings.StudyMeetingID = dbo.StudyMeetings.StudyMeetingID INNER JOIN
+             dbo.Orders ON dbo.OrderedStudyMeetings.OrderID = dbo.Orders.OrderID INNER JOIN
+             dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID
+WHERE (dbo.Orders.Status = 'Delivered')
+GROUP BY dbo.OrderedStudyMeetings.StudyMeetingID, dbo.StudyMeetings.Type, dbo.StudyMeetings.MeetingName, dbo.StudyMeetings.BeginningDate
 ```
+<img src="/PBD2023/Reportexamples/n_1_StudyMeetingsPeopleCount_example.png">
+
 ## Raport zapisanych osób na Webinars
 ```sql
-CREATE VIEW [dbo].[n_RaportDotyczącyLiczbyOsóbNaWebinars]
+CREATE VIEW [dbo].[n_1_WebinarsPeopleCount]
 AS
-SELECT        dbo.Webinars.Name, COUNT(dbo.OrderedWebinars.WebinarID) AS [Liczba osob], 'zdalnie' AS tryb
-FROM            dbo.OrderedWebinars INNER JOIN
-                         dbo.Orders ON dbo.OrderedWebinars.OrderID = dbo.Orders.OrderID INNER JOIN
-                         dbo.Webinars ON dbo.OrderedWebinars.WebinarID = dbo.Webinars.WebinarID INNER JOIN
-                         dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID
-WHERE        (dbo.Webinars.StartDate > GETDATE()) AND (dbo.Orders.Status = 'Delivered')
-GROUP BY dbo.Webinars.Name, dbo.OrderedWebinars.WebinarID
+SELECT dbo.Webinars.Name, COUNT(dbo.OrderedWebinars.WebinarID) AS [Liczba osob], 'zdalnie' AS tryb, dbo.Webinars.StartDate
+FROM   dbo.OrderedWebinars INNER JOIN
+             dbo.Orders ON dbo.OrderedWebinars.OrderID = dbo.Orders.OrderID INNER JOIN
+             dbo.Webinars ON dbo.OrderedWebinars.WebinarID = dbo.Webinars.WebinarID INNER JOIN
+             dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID
+WHERE (dbo.Orders.Status = 'Delivered')
+GROUP BY dbo.Webinars.Name, dbo.OrderedWebinars.WebinarID, dbo.Webinars.StartDate
 ```
+<img src="/PBD2023/Reportexamples/n_1_WebinarsPeopleCount_example.png">
 
 ## Raporty Finansowe
 Raporty są tworzone w następujące sposób, patrzymy do odpowiadających tabel ordered. Następnie łącząc z tabelą odpowiadającą typowi nauczania, grupujemy po ID i podajemy kwoty.
-Dodatkowo sprawdzamy czy produkt został już zamówiony (nie jest w koszyku) i został opłacony. 
+Dodatkowo sprawdzamy czy produkt został już zamówiony (nie jest w koszyku) i został opłacony. Każdy raport uwzględnia wyniki finansowe z ostatniego roku.
+
 
 ## Raport finansowy Courses
 ```sql
-CREATE VIEW [dbo].[n_RaportFinansowyCourses]
+
+CREATE VIEW [dbo].[n_1_CoursesFinancialReport]
 AS
-WITH t1 AS (SELECT        dbo.Courses.CourseID, COUNT(*) * dbo.Courses.Price AS zarobionasuma
-                           FROM            dbo.Orders INNER JOIN
-                                                    dbo.OrderedCourses ON dbo.Orders.OrderID = dbo.OrderedCourses.OrderID RIGHT OUTER JOIN
-                                                    dbo.Courses ON dbo.OrderedCourses.CourseID = dbo.Courses.CourseID
-                           WHERE        (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedCourses.HasBeenPaidFor = 1)
-                           GROUP BY dbo.Courses.CourseID, dbo.Courses.Price)
-    SELECT        Courses_1.CourseID, ISNULL(t1_1.zarobionasuma, 0) AS Expr1
-     FROM            dbo.Courses AS Courses_1 LEFT OUTER JOIN
-                              t1 AS t1_1 ON t1_1.CourseID = Courses_1.CourseID
+WITH t1 AS (SELECT dbo.Courses.CourseID, COUNT(*) * dbo.Courses.Price AS moneyMade, dbo.Courses.Price, COUNT(*) AS quantity
+                   FROM    dbo.Orders INNER JOIN
+                                 dbo.OrderedCourses ON dbo.Orders.OrderID = dbo.OrderedCourses.OrderID RIGHT OUTER JOIN
+                                 dbo.Courses ON dbo.OrderedCourses.CourseID = dbo.Courses.CourseID
+                   WHERE (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedCourses.HasBeenPaidFor = 1) AND (DATEDIFF(DAY, dbo.OrderedCourses.PaymentDate, GETDATE()) <= 365)
+                   GROUP BY dbo.Courses.CourseID, dbo.Courses.Price)
+    SELECT Courses_1.CourseID, Courses_1.Name, Courses_1.Price AS priceForCourse, ISNULL(t1_1.quantity, 0) AS quantity, ISNULL(t1_1.moneyMade, 0) AS CoursesIncome
+   FROM    dbo.Courses AS Courses_1 LEFT OUTER JOIN
+                t1 AS t1_1 ON t1_1.CourseID = Courses_1.CourseID
 ```
+<img src="/PBD2023/Reportexamples/n1_WebinarsFinancialReport_example.png">
 
 ## Raport finansowy Studies
 ```sql
-CREATE VIEW [dbo].[n_RaportFinansowyStudies]
-AS
-WITH t1 AS (SELECT        dbo.StudyMeetings.StudyMeetingID, COUNT(*) * dbo.StudyMeetings.MeetingPrice AS zarobionasuma
-                           FROM            dbo.Orders INNER JOIN
-                                                    dbo.OrderedStudyMeetings ON dbo.Orders.OrderID = dbo.OrderedStudyMeetings.OrderID RIGHT OUTER JOIN
-                                                    dbo.StudyMeetings ON dbo.OrderedStudyMeetings.StudyMeetingID = dbo.StudyMeetings.StudyMeetingID
-                           WHERE        (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedStudyMeetings.HasBeenPaidFor = 1) AND (dbo.OrderedStudyMeetings.IsPartOfStudies = 1)
-                           GROUP BY dbo.StudyMeetings.StudyMeetingID, dbo.StudyMeetings.MeetingPrice), t2 AS
-    (SELECT        StudyMeetings_1.StudyID AS idstudiow, StudyMeetings_1.StudyMeetingID AS idspotkania, ISNULL(t1_1.zarobionasuma, 0) AS zarobionasuma
-      FROM            dbo.StudyMeetings AS StudyMeetings_1 LEFT OUTER JOIN
-                                t1 AS t1_1 ON t1_1.StudyMeetingID = StudyMeetings_1.StudyMeetingID), t3 AS
-    (SELECT        idstudiow, SUM(zarobionasuma) AS zarobionasuma
-      FROM            t2 AS t2_1
-      GROUP BY idstudiow), t4 AS
-    (SELECT        dbo.OrderedStudies.StudyID AS idstudiow, COUNT(dbo.OrderedStudies.EntryFeePaid) AS liczbaoplacenfee
-      FROM            dbo.OrderedStudies INNER JOIN
-                                dbo.Orders AS Orders_1 ON dbo.OrderedStudies.OrderID = Orders_1.OrderID
-      WHERE        (Orders_1.Status = 'Delivered') AND (dbo.OrderedStudies.EntryFeePaid = 1)
-      GROUP BY dbo.OrderedStudies.StudyID), t5 AS
-    (SELECT        dbo.Studies.StudyID, ISNULL(t4_1.liczbaoplacenfee * dbo.Studies.EntryFee, 0) AS zarobekzentryfee
-      FROM            dbo.Studies LEFT OUTER JOIN
-                                t4 AS t4_1 ON dbo.Studies.StudyID = t4_1.idstudiow)
-    SELECT        t5_1.StudyID, t3_1.zarobionasuma + t5_1.zarobekzentryfee AS zarobekcały
-     FROM            t5 AS t5_1 LEFT OUTER JOIN
-                              t3 AS t3_1 ON t5_1.StudyID = t3_1.idstudiow
+CREATE view [dbo].[n_1_StudiesFinancialReport] as
+    WITH t1 AS (SELECT dbo.StudyMeetings.StudyMeetingID,
+                       COUNT(*) * dbo.StudyMeetings.MeetingPriceForStudents AS zarobionasuma
+                FROM dbo.Orders
+                         INNER JOIN
+                     dbo.OrderedStudyMeetings ON dbo.Orders.OrderID = dbo.OrderedStudyMeetings.OrderID
+                         RIGHT OUTER JOIN
+                     dbo.StudyMeetings ON dbo.OrderedStudyMeetings.StudyMeetingID = dbo.StudyMeetings.StudyMeetingID
+                WHERE (dbo.Orders.Status = 'Delivered')
+                  AND (dbo.OrderedStudyMeetings.HasBeenPaidFor = 1)
+                  AND (dbo.OrderedStudyMeetings.IsPartOfStudies = 1)
+                  AND (DATEDIFF(DAY, PaymentDate, GETDATE()) <= 365)
+                GROUP BY dbo.StudyMeetings.StudyMeetingID, dbo.StudyMeetings.MeetingPriceForStudents),
+         t2 AS
+             (SELECT StudyMeetings_1.StudyID        AS idstudiow,
+                     StudyMeetings_1.StudyMeetingID AS idspotkania,
+                     ISNULL(t1_1.zarobionasuma, 0)  AS zarobionasuma
+              FROM dbo.StudyMeetings AS StudyMeetings_1
+                       LEFT OUTER JOIN
+                   t1 AS t1_1 ON t1_1.StudyMeetingID = StudyMeetings_1.StudyMeetingID),
+         t3 AS
+             (SELECT idstudiow, SUM(zarobionasuma) AS zarobionasuma
+              FROM t2 AS t2_1
+              GROUP BY idstudiow),
+         t4 AS
+             (SELECT dbo.OrderedStudies.StudyID AS idstudiow, COUNT(dbo.OrderedStudies.EntryFeePaid) AS liczbaoplacenfee
+              FROM dbo.OrderedStudies
+                       INNER JOIN
+                   dbo.Orders AS Orders_1 ON dbo.OrderedStudies.OrderID = Orders_1.OrderID
+              WHERE (Orders_1.Status = 'Delivered')
+                AND (dbo.OrderedStudies.EntryFeePaid = 1)
+                AND (DATEDIFF(DAY, PaymentDate, GETDATE()) <= 365)
+              GROUP BY dbo.OrderedStudies.StudyID),
+         t5 AS
+             (SELECT dbo.Studies.StudyID,
+                     Studies.FieldOfStudy                                    as name,
+                     ISNULL(t4_1.liczbaoplacenfee * dbo.Studies.EntryFee, 0) AS zarobekzentryfee
+              FROM dbo.Studies
+                       LEFT OUTER JOIN
+                   t4 AS t4_1 ON dbo.Studies.StudyID = t4_1.idstudiow)
+    SELECT t5_1.StudyID,
+           t5_1.name,
+           t3_1.zarobionasuma                         as meetingsMoney,
+           t5_1.zarobekzentryfee                      as entryFeeMoney,
+           t3_1.zarobionasuma + t5_1.zarobekzentryfee AS studySum
+    FROM t5 AS t5_1
+             LEFT OUTER JOIN
+         t3 AS t3_1 ON t5_1.StudyID = t3_1.idstudiow
 ```
+<img src="/PBD2023/Reportexamples/n_1_StudiesFinancialReport_example.png">
 
 ## Raport finansowy StudyMeetings poza studium
 ```sql
-CREATE VIEW [dbo].[n_RaportFinansowyStudyMeetingsNoStudies]
+
+CREATE VIEW [dbo].[n_1_MeetingsNoStudiesFinancialReport]
 AS
-WITH t1 AS (SELECT        dbo.StudyMeetings.StudyMeetingID, COUNT(*) * dbo.StudyMeetings.MeetingPrice AS zarobionasuma
-                           FROM            dbo.Orders INNER JOIN
-                                                    dbo.OrderedStudyMeetings ON dbo.Orders.OrderID = dbo.OrderedStudyMeetings.OrderID RIGHT OUTER JOIN
-                                                    dbo.StudyMeetings ON dbo.OrderedStudyMeetings.StudyMeetingID = dbo.StudyMeetings.StudyMeetingID
-                           WHERE        (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedStudyMeetings.HasBeenPaidFor = 1) AND (dbo.OrderedStudyMeetings.IsPartOfStudies = 0)
-                           GROUP BY dbo.StudyMeetings.StudyMeetingID, dbo.StudyMeetings.MeetingPrice)
-    SELECT        StudyMeetings_1.StudyMeetingID, ISNULL(t1_1.zarobionasuma, 0) AS Expr1
-     FROM            dbo.StudyMeetings AS StudyMeetings_1 LEFT OUTER JOIN
-                              t1 AS t1_1 ON t1_1.StudyMeetingID = StudyMeetings_1.StudyMeetingID
+WITH t1 AS (SELECT dbo.StudyMeetings.StudyMeetingID, COUNT(*) * dbo.StudyMeetings.MeetingPrice AS moneyMade, COUNT(*) AS quantity
+                   FROM    dbo.Orders INNER JOIN
+                                 dbo.OrderedStudyMeetings ON dbo.Orders.OrderID = dbo.OrderedStudyMeetings.OrderID RIGHT OUTER JOIN
+                                 dbo.StudyMeetings ON dbo.OrderedStudyMeetings.StudyMeetingID = dbo.StudyMeetings.StudyMeetingID
+                   WHERE (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedStudyMeetings.HasBeenPaidFor = 1) AND (dbo.OrderedStudyMeetings.IsPartOfStudies = 0) AND (DATEDIFF(DAY, dbo.OrderedStudyMeetings.PaymentDate, GETDATE()) <= 365)
+                   GROUP BY dbo.StudyMeetings.StudyMeetingID, dbo.StudyMeetings.MeetingPrice)
+    SELECT StudyMeetings_1.StudyMeetingID, StudyMeetings_1.MeetingName, StudyMeetings_1.MeetingPrice AS priceForMeeting, ISNULL(t1_1.quantity, 0) AS quantity, ISNULL(t1_1.moneyMade, 0) AS StudyMeetingsIncome
+   FROM    dbo.StudyMeetings AS StudyMeetings_1 LEFT OUTER JOIN
+                t1 AS t1_1 ON t1_1.StudyMeetingID = StudyMeetings_1.StudyMeetingID
 ```
+<img src="/PBD2023/Reportexamples/n1_MeetingsNoStudiesFinancialReport_example.png">
+
 ## Raport finansowy Webinars
 ```sql
-CREATE VIEW [dbo].[n_RaportFinansowyWebinary]
+CREATE VIEW [dbo].[n_1_WebinarsFinancialReport]
 AS
-WITH t1 AS (SELECT        dbo.Webinars.WebinarID, COUNT(*) * dbo.Webinars.Price AS zarobionasuma
-                           FROM            dbo.Orders INNER JOIN
-                                                    dbo.OrderedWebinars ON dbo.Orders.OrderID = dbo.OrderedWebinars.OrderID RIGHT OUTER JOIN
-                                                    dbo.Webinars ON dbo.OrderedWebinars.WebinarID = dbo.Webinars.WebinarID
-                           WHERE        (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedWebinars.HasBeenPaidFor = 1)
-                           GROUP BY dbo.Webinars.WebinarID, dbo.Webinars.Price)
-    SELECT        Webinars_1.WebinarID, ISNULL(t1_1.zarobionasuma, 0) AS Expr1
-     FROM            dbo.Webinars AS Webinars_1 LEFT OUTER JOIN
-                              t1 AS t1_1 ON t1_1.WebinarID = Webinars_1.WebinarID
+WITH t1 AS (SELECT dbo.Webinars.WebinarID, COUNT(*) * dbo.Webinars.Price AS moneyMade, dbo.Webinars.Price AS price, COUNT(*) AS quantity
+                   FROM    dbo.Orders INNER JOIN
+                                 dbo.OrderedWebinars ON dbo.Orders.OrderID = dbo.OrderedWebinars.OrderID RIGHT OUTER JOIN
+                                 dbo.Webinars ON dbo.OrderedWebinars.WebinarID = dbo.Webinars.WebinarID
+                   WHERE (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedWebinars.HasBeenPaidFor = 1) AND (DATEDIFF(DAY, dbo.OrderedWebinars.PaymentDate, GETDATE()) <= 365)
+                   GROUP BY dbo.Webinars.WebinarID, dbo.Webinars.Price)
+    SELECT TOP (100) PERCENT Webinars_1.WebinarID, Webinars_1.Name, Webinars_1.Price AS priceforwebinar, ISNULL(t1_1.quantity, 0) AS quantity, ISNULL(t1_1.moneyMade, 0) AS webinarsIncome
+   FROM    dbo.Webinars AS Webinars_1 LEFT OUTER JOIN
+                t1 AS t1_1 ON t1_1.WebinarID = Webinars_1.WebinarID
 ```
+<img src="/PBD2023/Reportexamples/n1_WebinarsFinancialReport_example.png">
+
 ## Raporty frekwencji
 Raporty frekwencji powstają w taki sposób, że od osób zapisanych na dany typ spotkania odejmujemy liczbę osób nieobecnych.
 ## Raport frekwencji Meetings
 ```sql
-CREATE VIEW [dbo].[n_RaportFrekwencjiMeetings]
+CREATE VIEW [dbo].[n_1_MeetingsPresencesReport]
 AS
-WITH t1 AS (SELECT        dbo.StudyMeetings.MeetingName, dbo.StudyMeetings.Type, COUNT(dbo.OrderedStudyMeetings.StudyMeetingID) AS [Liczba osob], dbo.StudyMeetings.StudyMeetingID
-                           FROM            dbo.OrderedStudyMeetings INNER JOIN
-                                                    dbo.StudyMeetings ON dbo.OrderedStudyMeetings.StudyMeetingID = dbo.StudyMeetings.StudyMeetingID INNER JOIN
-                                                    dbo.Orders ON dbo.OrderedStudyMeetings.OrderID = dbo.Orders.OrderID INNER JOIN
-                                                    dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID
-                           WHERE        (dbo.StudyMeetings.BeginningDate >= GETDATE()) AND (dbo.Orders.Status = 'Delivered')
-                           GROUP BY dbo.OrderedStudyMeetings.StudyMeetingID, dbo.StudyMeetings.Type, dbo.StudyMeetings.MeetingName, dbo.StudyMeetings.StudyMeetingID), t2 AS
-    (SELECT        StudyMeetingID, COUNT(StudentID) AS absencje
-      FROM            dbo.StudyMeetingsAbsences
-      GROUP BY StudyMeetingID)
-    SELECT        t1_1.StudyMeetingID, t1_1.[Liczba osob] - t2_1.absencje AS liczbaobecnych
-     FROM            t1 AS t1_1 INNER JOIN
-                              t2 AS t2_1 ON t2_1.StudyMeetingID = t1_1.StudyMeetingID
+WITH t2 AS (SELECT StudyMeetingID, COUNT(StudentID) AS absencje
+                   FROM    dbo.StudyMeetingsAbsences
+                   GROUP BY StudyMeetingID), t1 AS
+    (SELECT dbo.StudyMeetings.MeetingName, dbo.StudyMeetings.Type, COUNT(dbo.OrderedStudyMeetings.StudyMeetingID) AS [Liczba osob], dbo.StudyMeetings.StudyMeetingID, dbo.StudyMeetings.BeginningDate
+    FROM    dbo.OrderedStudyMeetings INNER JOIN
+                 dbo.StudyMeetings ON dbo.OrderedStudyMeetings.StudyMeetingID = dbo.StudyMeetings.StudyMeetingID INNER JOIN
+                 dbo.Orders ON dbo.OrderedStudyMeetings.OrderID = dbo.Orders.OrderID INNER JOIN
+                 dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID
+    WHERE (dbo.Orders.Status = 'Delivered')
+    GROUP BY dbo.OrderedStudyMeetings.StudyMeetingID, dbo.StudyMeetings.Type, dbo.StudyMeetings.MeetingName, dbo.StudyMeetings.StudyMeetingID, dbo.StudyMeetings.BeginningDate)
+    SELECT t1_1.Type, t1_1.StudyMeetingID, t1_1.MeetingName, t1_1.[Liczba osob] - ISNULL(t2_1.absencje, 0) AS presenceCount, t1_1.BeginningDate
+   FROM    t1 AS t1_1 LEFT OUTER JOIN
+                t2 AS t2_1 ON t2_1.StudyMeetingID = t1_1.StudyMeetingID
 ```
+<img src="/PBD2023/Reportexamples/n_1MeetingsPresencesReport_example.png>
+
 
 ## Raport frekwencji Modules
 ```sql
 
-CREATE VIEW [dbo].[n_RaportFrekwencjiModules]
+CREATE VIEW [dbo].[n_1_ModulesPresencesReport]
 AS
-WITH t1 AS (SELECT        dbo.CoursesModules.Type, COUNT(dbo.OrderedCourses.CourseID) AS [Liczba osob], dbo.CoursesModules.ModuleName, dbo.CoursesModules.ModuleID
-                           FROM            dbo.Orders INNER JOIN
-                                                    dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID INNER JOIN
-                                                    dbo.OrderedCourses ON dbo.Orders.OrderID = dbo.OrderedCourses.OrderID INNER JOIN
-                                                    dbo.Courses ON dbo.OrderedCourses.CourseID = dbo.Courses.CourseID INNER JOIN
-                                                    dbo.CoursesModules ON dbo.Courses.CourseID = dbo.CoursesModules.CourseID
-                           WHERE        (dbo.CoursesModules.BeginningDate >= GETDATE()) AND (dbo.Orders.Status = 'Delivered')
-                           GROUP BY dbo.Students.StudentID, dbo.OrderedCourses.CourseID, dbo.CoursesModules.Type, dbo.CoursesModules.ModuleName, dbo.CoursesModules.ModuleID), t2 AS
-    (SELECT        ModuleID, COUNT(StudentID) AS absencje
-      FROM            dbo.ModulesAbsences
-      GROUP BY ModuleID)
-    SELECT        t1_1.ModuleID, t1_1.[Liczba osob] - t2_1.absencje AS liczbaobecnych
-     FROM            t1 AS t1_1 INNER JOIN
-                              t2 AS t2_1 ON t2_1.ModuleID = t1_1.ModuleID
+WITH t2 AS (SELECT ModuleID, COUNT(StudentID) AS absencje
+                   FROM    dbo.ModulesAbsences
+                   GROUP BY ModuleID), t1 AS
+    (SELECT dbo.CoursesModules.Type, COUNT(dbo.OrderedCourses.CourseID) AS [Liczba osob], dbo.CoursesModules.ModuleName, dbo.CoursesModules.ModuleID, dbo.CoursesModules.BeginningDate
+    FROM    dbo.Orders INNER JOIN
+                 dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID INNER JOIN
+                 dbo.OrderedCourses ON dbo.Orders.OrderID = dbo.OrderedCourses.OrderID INNER JOIN
+                 dbo.Courses ON dbo.OrderedCourses.CourseID = dbo.Courses.CourseID INNER JOIN
+                 dbo.CoursesModules ON dbo.Courses.CourseID = dbo.CoursesModules.CourseID
+    WHERE (dbo.Orders.Status = 'Delivered')
+    GROUP BY dbo.OrderedCourses.CourseID, dbo.CoursesModules.Type, dbo.CoursesModules.ModuleName, dbo.CoursesModules.ModuleID, dbo.CoursesModules.BeginningDate)
+    SELECT t1_1.Type, t1_1.ModuleID, t1_1.ModuleName, t1_1.[Liczba osob] - ISNULL(t2_1.absencje, 0) AS presenceCount, t1_1.BeginningDate
+   FROM    t1 AS t1_1 LEFT OUTER JOIN
+                t2 AS t2_1 ON t2_1.ModuleID = t1_1.ModuleID
 ```
+<img src="/PBD2023/Reportexamples/n_1_MoudlesPresencesReport.png">
+
+## Szczegółowa frekwencja na Meetings
+```sql
+CREATE VIEW [dbo].[n_1_MeetingsDetailsPresences]
+AS
+WITH t1 AS (SELECT dbo.StudyMeetings.MeetingName, dbo.StudyMeetings.Type, dbo.StudyMeetings.BeginningDate, dbo.Students.StudentID, dbo.Users.Name, dbo.Users.Surname
+                   FROM    dbo.OrderedStudyMeetings INNER JOIN
+                                 dbo.StudyMeetings ON dbo.OrderedStudyMeetings.StudyMeetingID = dbo.StudyMeetings.StudyMeetingID INNER JOIN
+                                 dbo.Orders ON dbo.OrderedStudyMeetings.OrderID = dbo.Orders.OrderID INNER JOIN
+                                 dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID INNER JOIN
+                                 dbo.Users ON dbo.Students.StudentID = dbo.Users.UserID
+                   WHERE (dbo.StudyMeetings.BeginningDate < GETDATE()) AND (dbo.Orders.Status = 'Delivered'))
+    SELECT t1_1.Name, t1_1.Surname, t1_1.StudentID, t1_1.BeginningDate, t1_1.MeetingName, CASE WHEN StudyMeetingID IS NULL THEN 1 ELSE 0 END AS obecność
+   FROM    dbo.StudyMeetingsAbsences RIGHT OUTER JOIN
+                t1 AS t1_1 ON t1_1.StudentID = dbo.StudyMeetingsAbsences.StudentID
+
+```
+<img src="/PBD2023/Reportexamples/n_1_MeetingsDetailsPresences_example.png">
+
+
+
+
+
+
+
+
+## Szczegółowa frekwencja na Modules
+```sql
+CREATE VIEW [dbo].[n_1_ModulesDetailsPresences]
+AS
+WITH t1 AS (SELECT dbo.CoursesModules.ModuleName, dbo.CoursesModules.Type, dbo.CoursesModules.BeginningDate, dbo.Students.StudentID, dbo.Users.Name, dbo.Users.Surname
+                   FROM    dbo.Courses INNER JOIN
+                                 dbo.CoursesModules ON dbo.Courses.CourseID = dbo.CoursesModules.CourseID INNER JOIN
+                                 dbo.OrderedCourses ON dbo.Courses.CourseID = dbo.OrderedCourses.CourseID INNER JOIN
+                                 dbo.Orders ON dbo.OrderedCourses.OrderID = dbo.Orders.OrderID INNER JOIN
+                                 dbo.Students ON dbo.Orders.StudentID = dbo.Students.StudentID INNER JOIN
+                                 dbo.Users ON dbo.Students.StudentID = dbo.Users.UserID
+                   WHERE (dbo.Orders.Status = 'Delivered'))
+    SELECT t1_1.Name, t1_1.Surname, t1_1.StudentID, t1_1.BeginningDate, t1_1.ModuleName, CASE WHEN ModulesAbsences.ModuleID IS NULL THEN 1 ELSE 0 END AS obecność
+   FROM    dbo.ModulesAbsences RIGHT OUTER JOIN
+                t1 AS t1_1 ON t1_1.StudentID = dbo.ModulesAbsences.StudentID
+```
+
+<img src="/PBD2023/Reportexamples/n_1_ModulesDetailsPresences_example.png">
+
+
+## Raporty bilokacji
+Raporty pokazują jeżeli jakiejś osobie pokrywają się spotkania.
+
+
+## Raport bilokacji Webinary
+```sql
+CREATE VIEW [dbo].[n_1_WebinarsBilocation]
+AS
+SELECT aw.WebinarID AS firstWebinarID, bw.WebinarID AS secondWebinarID, aw.Name AS firstWebinarName, bw.Name AS secondWebinarName, dbo.Students.StudentID, dbo.Users.Name AS UserName, dbo.Users.Surname, aw.StartDate AS firstStartDate, aw.Duration AS firstDuration, 
+             bw.StartDate AS secondStartDate, bw.Duration AS secondDuration
+FROM   dbo.Webinars AS aw INNER JOIN
+             dbo.OrderedWebinars AS a ON aw.WebinarID = a.WebinarID INNER JOIN
+             dbo.OrderedWebinars AS b ON a.OrderID = b.OrderID INNER JOIN
+             dbo.Webinars AS bw ON b.WebinarID = bw.WebinarID AND aw.WebinarID < bw.WebinarID AND DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', aw.Duration), aw.StartDate) > bw.StartDate AND aw.StartDate < DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', bw.Duration), 
+             bw.StartDate) INNER JOIN
+             dbo.Orders ON a.OrderID = dbo.Orders.OrderID INNER JOIN
+             dbo.Students ON dbo.Students.StudentID = dbo.Orders.StudentID INNER JOIN
+             dbo.Users ON dbo.Students.StudentID = dbo.Users.UserID
+```
+<img src="/PBD2023/Reportexamples/n_1_WebinarsBilocation_example.png">
+
+## Raport bilokacji StudyMeetings
+```sql
+CREATE VIEW [dbo].[n_1_StudyMeetingsBilocations]
+AS
+SELECT asm.StudyMeetingID AS firstStudyMeetingID, bsm.StudyMeetingID AS secondStudyMeetingID, asm.MeetingName AS firstMeetingName, bsm.MeetingName AS secondMeetingName, dbo.Students.StudentID, dbo.Users.Name AS UserName, dbo.Users.Surname, 
+             asm.BeginningDate AS firstBeginningDate, asm.Duration AS firstDuration, bsm.BeginningDate AS secondBeginningDate, bsm.Duration AS secondDuration
+FROM   dbo.StudyMeetings AS asm INNER JOIN
+             dbo.OrderedStudyMeetings AS a ON asm.StudyMeetingID = a.StudyMeetingID INNER JOIN
+             dbo.OrderedStudyMeetings AS b ON a.OrderID = b.OrderID INNER JOIN
+             dbo.StudyMeetings AS bsm ON b.StudyMeetingID = bsm.StudyMeetingID AND asm.StudyMeetingID < bsm.StudyMeetingID AND DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', asm.Duration), asm.BeginningDate) > bsm.BeginningDate AND 
+             asm.BeginningDate < DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', bsm.Duration), bsm.BeginningDate) INNER JOIN
+             dbo.Orders ON a.OrderID = dbo.Orders.OrderID INNER JOIN
+             dbo.Students ON dbo.Students.StudentID = dbo.Orders.StudentID INNER JOIN
+             dbo.Users ON dbo.Students.StudentID = dbo.Users.UserID
+```
+<img src="/PBD2023/Reportexamples/n_1_StudyMeetingsBilocations_example.png">
+
+
+
+
+
+
+
+
+
+
+
 ## Procedury
 
 # AddCourseToBasket, AddStudyMeetingToBasket, AddStudyToBasket, AddWebinarToBasket
