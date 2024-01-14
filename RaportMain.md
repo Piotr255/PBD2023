@@ -1154,7 +1154,7 @@ WITH t2 AS (SELECT StudyMeetingID, COUNT(StudentID) AS absencje
    FROM    t1 AS t1_1 LEFT OUTER JOIN
                 t2 AS t2_1 ON t2_1.StudyMeetingID = t1_1.StudyMeetingID
 ```
-<img src="/Reportexamples/n_1MeetingsPresencesReport_example.png>
+<img src="/Reportexamples/n_1MeetingsPresencesReport_example.png">
 
 
 ## Raport frekwencji Modules
