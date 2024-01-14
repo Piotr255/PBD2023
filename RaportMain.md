@@ -59,7 +59,7 @@ pbd_<14>_raport4 | Piotr Albiński, Adam Konior, Mateusz Maciaszczyk
   - weryfikowanie przekroczenia limitu miejsc: kursy hybrydowe i stacjonarne.
 
 
-<img src="newest1.png">
+<img src="newest2.png">
 
 ## Skrypty tworzenia tabel:
 
@@ -348,12 +348,16 @@ CREATE TABLE [dbo].[OrderedCourses](
 	[IsGrantedCertificate] [bit] NULL,
 	[PaymentAuthCode] [nvarchar](50) NULL,
 	[Error] [nvarchar](max) NULL,
+	[PaymentDate] [datetime] NULL,
  CONSTRAINT [PK_OrderedCourses] PRIMARY KEY CLUSTERED 
 (
 	[OrderID] ASC,
 	[CourseID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[OrderedCourses] ADD  CONSTRAINT [DF_OrderedCourses_PaymentDeferral]  DEFAULT ((0)) FOR [PaymentDeferral]
 GO
 
 ALTER TABLE [dbo].[OrderedCourses] ADD  CONSTRAINT [DF_OrderedCourses_IsGrantedCertificate]  DEFAULT ((0)) FOR [IsGrantedCertificate]
@@ -405,12 +409,16 @@ CREATE TABLE [dbo].[OrderedStudies](
 	[PaymentAuthCode] [nvarchar](50) NULL,
 	[Error] [nvarchar](max) NULL,
 	[FinalExamPassed] [bit] NULL,
+	[PaymentDate] [datetime] NULL,
  CONSTRAINT [PK_OrderedStudies_1] PRIMARY KEY CLUSTERED 
 (
 	[OrderID] ASC,
 	[StudyID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[OrderedStudies] ADD  CONSTRAINT [DF_OrderedStudies_PaymentDeferral]  DEFAULT ((0)) FOR [PaymentDeferral]
 GO
 
 ALTER TABLE [dbo].[OrderedStudies] ADD  CONSTRAINT [DF_OrderedStudies_IsGrantedCertificate]  DEFAULT ((0)) FOR [IsGrantedCertificate]
@@ -459,12 +467,16 @@ CREATE TABLE [dbo].[OrderedStudyMeetings](
 	[PaymentDeferralReason] [nvarchar](max) NULL,
 	[PaymentAuthCode] [nvarchar](50) NULL,
 	[Error] [nvarchar](max) NULL,
+	[PaymentDate] [datetime] NULL,
  CONSTRAINT [PK_OrderedStudyMeetings_1] PRIMARY KEY CLUSTERED 
 (
 	[StudyMeetingID] ASC,
 	[OrderID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[OrderedStudyMeetings] ADD  CONSTRAINT [DF_OrderedStudyMeetings_PaymentDeferral]  DEFAULT ((0)) FOR [PaymentDeferral]
 GO
 
 ALTER TABLE [dbo].[OrderedStudyMeetings]  WITH CHECK ADD  CONSTRAINT [FK_OrderedStudyMeetings_Orders] FOREIGN KEY([OrderID])
@@ -506,12 +518,16 @@ CREATE TABLE [dbo].[OrderedWebinars](
 	[PaymentDeferralReason] [nvarchar](max) NULL,
 	[PaymentAuthCode] [nvarchar](50) NULL,
 	[Error] [nvarchar](max) NULL,
+	[PaymentDate] [datetime] NULL,
  CONSTRAINT [PK_OrderedWebinars] PRIMARY KEY CLUSTERED 
 (
 	[OrderID] ASC,
 	[WebinarID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[OrderedWebinars] ADD  CONSTRAINT [DF_OrderedWebinars_PaymentDeferral]  DEFAULT ((0)) FOR [PaymentDeferral]
 GO
 
 ALTER TABLE [dbo].[OrderedWebinars]  WITH CHECK ADD  CONSTRAINT [FK_OrderedWebinars_Orders] FOREIGN KEY([OrderID])
@@ -2095,6 +2111,7 @@ grant execute on AddStudyToBasket to Student
 grant execute on AddWebinarToBasket to Student
 grant execute on DeliverTheOrder to Student
 grant execute on PayForProduct to Student
+```
 # Employee (pracownik biura)
 
 - Generuje certyfikaty
