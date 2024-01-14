@@ -912,7 +912,7 @@ FROM   dbo.Courses INNER JOIN
              dbo.Users ON dbo.Students.StudentID = dbo.Users.UserID
 WHERE (dbo.OrderedCourses.PaymentDeferral = 0) AND (DATEDIFF(day, GETDATE(), dbo.Courses.StartDate) <= 3) AND (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedCourses.HasBeenPaidFor = 0)
 ```
-<img src="/PBD2023/Reportexamples/n_1_CoursesDebtorReport_example.png">
+<img src="/Reportexamples/n_1_CoursesDebtorReport_example.png">
 
 
 ## Raport dłużników Studies
