@@ -912,7 +912,7 @@ FROM   dbo.Courses INNER JOIN
              dbo.Users ON dbo.Students.StudentID = dbo.Users.UserID
 WHERE (dbo.OrderedCourses.PaymentDeferral = 0) AND (DATEDIFF(day, GETDATE(), dbo.Courses.StartDate) <= 3) AND (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedCourses.HasBeenPaidFor = 0)
 ```
-<img src="/Reportexamples/n_1_CoursesDebtorReport_example.png">
+<img src="Reportexamples/n_1_CoursesDebtorReport_example.png">
 
 
 ## Raport dłużników Studies
@@ -927,7 +927,7 @@ FROM   dbo.OrderedStudies INNER JOIN
              dbo.Studies ON dbo.OrderedStudies.StudyID = dbo.Studies.StudyID
 WHERE (dbo.OrderedStudies.PaymentDeferral = 0) AND (dbo.OrderedStudies.EntryFeePaid = 0) AND (dbo.Orders.Status = 'Delivered')
 ```
-<img src="/Reportexamples/n_1_StudiesDebtorReport_example.png">
+<img src="Reportexamples/n_1_StudiesDebtorReport_example.png">
 
 ## Raport dłużników StudyMeetings bez studium
 ```sql
@@ -942,7 +942,7 @@ FROM   dbo.Orders INNER JOIN
              dbo.Users ON dbo.Students.StudentID = dbo.Users.UserID
 WHERE (dbo.OrderedStudyMeetings.IsPartOfStudies = 0) AND (dbo.OrderedStudyMeetings.PaymentDeferral = 0) AND (DATEDIFF(day, GETDATE(), dbo.StudyMeetings.BeginningDate) <= 3) AND (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedStudyMeetings.HasBeenPaidFor = 0)
 ```
-<img src="/Reportexamples/n_1_MeetingsNoStudiesDebtorReport_example.png">
+<img src="Reportexamples/n_1_MeetingsNoStudiesDebtorReport_example.png">
 
 
 
@@ -960,7 +960,7 @@ FROM   dbo.OrderedWebinars INNER JOIN
              dbo.Users ON dbo.Students.StudentID = dbo.Users.UserID
 WHERE (dbo.Webinars.StartDate < GETDATE()) AND (dbo.OrderedWebinars.PaymentDeferral = 0) AND (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedWebinars.HasBeenPaidFor = 0)
 ```
-<img src="/Reportexamples/n_1_WebinarsDebtorReport_example.png">
+<img src="Reportexamples/n_1_WebinarsDebtorReport_example.png">
 
 
 
@@ -979,7 +979,7 @@ FROM   dbo.Orders INNER JOIN
              dbo.Users ON dbo.Students.StudentID = dbo.Users.UserID
 WHERE (dbo.OrderedStudyMeetings.IsPartOfStudies = 1) AND (dbo.OrderedStudyMeetings.PaymentDeferral = 0) AND (DATEDIFF(day, GETDATE(), dbo.StudyMeetings.BeginningDate) <= 3) AND (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedStudyMeetings.HasBeenPaidFor = 0)
 ```
-<img src="/Reportexamples/n_1_MeetingsStudiesDebtorReport_example.png">
+<img src="Reportexamples/n_1_MeetingsStudiesDebtorReport_example.png">
 
 ## Raporty zapisanych.
 To, że ktoś jest zapisany na dany typ spotkania oznacza, że zamówił go i jego status to 'Delivered'.
@@ -996,7 +996,7 @@ FROM   dbo.Orders INNER JOIN
 WHERE (dbo.Orders.Status = 'Delivered')
 GROUP BY dbo.OrderedCourses.CourseID, dbo.CoursesModules.Type, dbo.CoursesModules.ModuleName, dbo.CoursesModules.BeginningDate
 ```
-<img src="/Reportexamples/n_1_CoursesModulesPeopleCount_example.png">
+<img src="Reportexamples/n_1_CoursesModulesPeopleCount_example.png">
 
 ## Raport zapisanych osób na Meetings
 ```sql
@@ -1010,7 +1010,7 @@ FROM   dbo.OrderedStudyMeetings INNER JOIN
 WHERE (dbo.Orders.Status = 'Delivered')
 GROUP BY dbo.OrderedStudyMeetings.StudyMeetingID, dbo.StudyMeetings.Type, dbo.StudyMeetings.MeetingName, dbo.StudyMeetings.BeginningDate
 ```
-<img src="/Reportexamples/n_1_StudyMeetingsPeopleCount_example.png">
+<img src="Reportexamples/n_1_StudyMeetingsPeopleCount_example.png">
 
 ## Raport zapisanych osób na Webinars
 ```sql
@@ -1024,7 +1024,7 @@ FROM   dbo.OrderedWebinars INNER JOIN
 WHERE (dbo.Orders.Status = 'Delivered')
 GROUP BY dbo.Webinars.Name, dbo.OrderedWebinars.WebinarID, dbo.Webinars.StartDate
 ```
-<img src="/Reportexamples/n_1_WebinarsPeopleCount_example.png">
+<img src="Reportexamples/n_1_WebinarsPeopleCount_example.png">
 
 ## Raporty Finansowe
 Raporty są tworzone w następujące sposób, patrzymy do odpowiadających tabel ordered. Następnie łącząc z tabelą odpowiadającą typowi nauczania, grupujemy po ID i podajemy kwoty.
@@ -1046,7 +1046,7 @@ WITH t1 AS (SELECT dbo.Courses.CourseID, COUNT(*) * dbo.Courses.Price AS moneyMa
    FROM    dbo.Courses AS Courses_1 LEFT OUTER JOIN
                 t1 AS t1_1 ON t1_1.CourseID = Courses_1.CourseID
 ```
-<img src="/Reportexamples/n1_WebinarsFinancialReport_example.png">
+<img src="Reportexamples/n1_WebinarsFinancialReport_example.png">
 
 ## Raport finansowy Studies
 ```sql
@@ -1099,7 +1099,7 @@ CREATE view [dbo].[n_1_StudiesFinancialReport] as
              LEFT OUTER JOIN
          t3 AS t3_1 ON t5_1.StudyID = t3_1.idstudiow
 ```
-<img src="/Reportexamples/n_1_StudiesFinancialReport_example.png">
+<img src="Reportexamples/n_1_StudiesFinancialReport_example.png">
 
 ## Raport finansowy StudyMeetings poza studium
 ```sql
@@ -1116,7 +1116,7 @@ WITH t1 AS (SELECT dbo.StudyMeetings.StudyMeetingID, COUNT(*) * dbo.StudyMeeting
    FROM    dbo.StudyMeetings AS StudyMeetings_1 LEFT OUTER JOIN
                 t1 AS t1_1 ON t1_1.StudyMeetingID = StudyMeetings_1.StudyMeetingID
 ```
-<img src="/Reportexamples/n1_MeetingsNoStudiesFinancialReport_example.png">
+<img src="Reportexamples/n1_MeetingsNoStudiesFinancialReport_example.png">
 
 ## Raport finansowy Webinars
 ```sql
@@ -1132,7 +1132,7 @@ WITH t1 AS (SELECT dbo.Webinars.WebinarID, COUNT(*) * dbo.Webinars.Price AS mone
    FROM    dbo.Webinars AS Webinars_1 LEFT OUTER JOIN
                 t1 AS t1_1 ON t1_1.WebinarID = Webinars_1.WebinarID
 ```
-<img src="/Reportexamples/n1_WebinarsFinancialReport_example.png">
+<img src="Reportexamples/n1_WebinarsFinancialReport_example.png">
 
 ## Raporty frekwencji
 Raporty frekwencji powstają w taki sposób, że od osób zapisanych na dany typ spotkania odejmujemy liczbę osób nieobecnych.
@@ -1154,7 +1154,7 @@ WITH t2 AS (SELECT StudyMeetingID, COUNT(StudentID) AS absencje
    FROM    t1 AS t1_1 LEFT OUTER JOIN
                 t2 AS t2_1 ON t2_1.StudyMeetingID = t1_1.StudyMeetingID
 ```
-<img src="/Reportexamples/n_1MeetingsPresencesReport_example.png">
+<img src="Reportexamples/n_1MeetingsPresencesReport_example.png">
 
 
 ## Raport frekwencji Modules
@@ -1177,7 +1177,7 @@ WITH t2 AS (SELECT ModuleID, COUNT(StudentID) AS absencje
    FROM    t1 AS t1_1 LEFT OUTER JOIN
                 t2 AS t2_1 ON t2_1.ModuleID = t1_1.ModuleID
 ```
-<img src="/Reportexamples/n_1_MoudlesPresencesReport.png">
+<img src="Reportexamples/n_1_MoudlesPresencesReport.png">
 
 ## Szczegółowa frekwencja na Meetings
 ```sql
@@ -1195,7 +1195,7 @@ WITH t1 AS (SELECT dbo.StudyMeetings.MeetingName, dbo.StudyMeetings.Type, dbo.St
                 t1 AS t1_1 ON t1_1.StudentID = dbo.StudyMeetingsAbsences.StudentID
 
 ```
-<img src="/Reportexamples/n_1_MeetingsDetailsPresences_example.png">
+<img src="Reportexamples/n_1_MeetingsDetailsPresences_example.png">
 
 
 
@@ -1221,7 +1221,7 @@ WITH t1 AS (SELECT dbo.CoursesModules.ModuleName, dbo.CoursesModules.Type, dbo.C
                 t1 AS t1_1 ON t1_1.StudentID = dbo.ModulesAbsences.StudentID
 ```
 
-<img src="/Reportexamples/n_1_ModulesDetailsPresences_example.png">
+<img src="Reportexamples/n_1_ModulesDetailsPresences_example.png">
 
 
 ## Raporty bilokacji
@@ -1243,7 +1243,7 @@ FROM   dbo.Webinars AS aw INNER JOIN
              dbo.Students ON dbo.Students.StudentID = dbo.Orders.StudentID INNER JOIN
              dbo.Users ON dbo.Students.StudentID = dbo.Users.UserID
 ```
-<img src="/Reportexamples/n_1_WebinarsBilocation_example.png">
+<img src="Reportexamples/n_1_WebinarsBilocation_example.png">
 
 ## Raport bilokacji StudyMeetings
 ```sql
@@ -1260,7 +1260,7 @@ FROM   dbo.StudyMeetings AS asm INNER JOIN
              dbo.Students ON dbo.Students.StudentID = dbo.Orders.StudentID INNER JOIN
              dbo.Users ON dbo.Students.StudentID = dbo.Users.UserID
 ```
-<img src="/Reportexamples/n_1_StudyMeetingsBilocations_example.png">
+<img src="Reportexamples/n_1_StudyMeetingsBilocations_example.png">
 
 
 
