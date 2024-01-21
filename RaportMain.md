@@ -1962,9 +1962,9 @@ END
 ```
 
 # InsertStudyMeetings
-Procedura służąca do wstawiania spotkań w ramach studiów do bazy
+Procedura służąca do wstawiania spotkań w ramach studiów do bazy. Jeżeli w bazie nie ma podanego nauczyciela, języka, kierunku studiów lub limit na dane spotkanie będzie mniejszy niż limit na studia, do których należy to spotkanie wtedy procedura się nie wykona i rzuci wyjątek.
 ```sql
-ALTER PROCEDURE [dbo].[InsertStudieMeetings]
+CREATE PROCEDURE InsertStudieMeetings
     @Study nvarchar(50),
     @Type nvarchar(50),
     @TeacherID int,
@@ -1996,12 +1996,17 @@ BEGIN
         begin
             raiserror('Data rozpoczęcia musi być późniejsza niż dzisiejsza', 16, 1)
         end
+    else if @Limit < (select Limit from Studies where FieldOfStudy = @Study)
+        begin
+            raiserror('Limit uczestników nie może być mniejsza niż limit na kierunku', 16, 1)
+        end
     else
         begin
             insert into StudyMeetings (StudyID, Type, TeacherID, LanguageID, MeetingName, MeetingPrice, MeetingPriceForStudents, BeginningDate, Duration, MeetingSyllabusDescription, SeatCount, TranslatorName, TranslatorSurname)
             values ((select StudyID from Studies where FieldOfStudy = @Study), @Type, @TeacherID, (select LanguageID from Languages where Languages.LanguageID = @Language), @MeetingName, @MeetingPrice, @MeetingPriceForStudents, @BeginningDate, @Duration, @Syllabus, @Limit, @TranslatorName, @TranslatorSurname)
         end
 END
+go
 ```
 
 #InsertStudies
@@ -2070,27 +2075,8 @@ BEGIN
 END
 ```
 
-## Triggery:
-
-# UpdateStudyLimit
-Po dodaniu nowego spotkania w ramach studiów trigger aktualizuje limit miejsc na studiach, żeby limit na studia był mniejszy lub równy niż każdy z pośród spotkań, z których się składa
-```sql
-CREATE TRIGGER UpdateStudyLimit
-ON StudyMeetings
-AFTER INSERT
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    UPDATE Studies
-    SET Limit = i.SeatCount
-    FROM inserted i
-    INNER JOIN Studies s ON i.StudyID = s.StudyID
-    WHERE s.Limit > i.SeatCount;
-END
-GO
-
-```
+## Triggery
+Trigger został usunięty i wyodrębniony do procedury InsertStudyMeetings.
 
 ## Role:
 
@@ -2131,34 +2117,34 @@ grant execute on PayForProduct to Student
 - Sprawdza frekwencje studentów
 
 ```sql
-create role employee
+create role Employee
 grant execute on GrantStudentCertificate to employee
 grant execute on InsertCourses to employee
 grant execute on InsertStudies to employee
 grant execute on InsertWebinars to employee
-grant execute on InsertStudent to employee
+grant execute on InsertStudents to employee
 grant execute on InsertEmployees to employee
 grant execute on InsertTeachers to employee
-grant execute on InsertStudyMeetings to employee
-grant execute on SelectAllCustomers to employee
-grant select on n1_CoursesFinancialReport to employee
-grant select on n1_WebinarsFinancialReport to employee
-grant select on n1_MeetingsNoStudiesFinancialReport to employee
-grant select on n_1_StudiesFinancialReport to employee
-grant select on n_FrekwencjaSzczegółowaMeetings to employee
-grant select on n_RaportDotyczącyLiczbyOsóbNaCoursesModules to employee
-grant select on n_RaportDotyczącyLiczbyOsóbNaWebinars to employee
-grant select on n_RaportDotyczącyLiczbyOsóbNaMeetings to employee
-grant select on RaportDotyczącyLiczbyOsóbNaWebinars to employee
-grant select on n_RaportFrekwencjiMeetings to employee
-grant select on n_RaportFrekwencjiModules to employee
-grant select on n_RaportDłużnikówCourses to employee
-grant select on n_RaportDłużnikówStudies to employee
-grant select on n_RaportDłużnikówWebinars to employee
-grant select on n_RaportDłużnikówStudyMeetingsNieStudium to employee
-grant select on n_RaportFinansowyCourses to employee
-grant select on n_RaportFinansowyStudies to employee
-grant select on n_RaportFinansowyWebinars to employee
+grant execute on InsertStudieMeetings to employee
+
+grant select on FinanceReportCourses365 to employee
+grant select on FinanceReportStudies365 to employee
+grant select on FinanceReportWebinars365 to employee
+grant select on FinanceReportStudyMeetingsNoStudies365 to employee
+grant select on n_1_CoursesDebtorReport to employee
+grant select on n_1_CoursesModulesBilocation to employee
+grant select on n_1_CoursesModulesPeopleCount to employee
+grant select on n_1_MeetingsDetailsPresences to employee
+grant select on n_1_MeetingsNoStudiesDebtorReport to employee
+grant select on n_1_MeetingsStudiesDebtorReport to employee
+grant select on n_1_ModulesDetailsPresences to employee
+grant select on n_1_ModulesPresencesReport to employee
+grant select on n_1_StudiesDebtorReport to employee
+grant select on n_1_StudyMeetingsBilocations to employee
+grant select on n_1_StudyMeetingsPeopleCount to employee
+grant select on n_1_WebinarsDebtorReport to employee
+grant select on n_1_WebinarsBilocation to employee
+grant select on n_1_WebinarsPeopleCount to employee
 ```
 
 # Director (dyrektor)
@@ -2170,15 +2156,14 @@ grant select on n_RaportFinansowyWebinars to employee
 ```sql
 create role Director
 grant execute on ApplyPaymentDeferralToOrderedProduct to Director
-grant execute on SelectAllCustomers to Director
-grant select on n1_CoursesFinancialReport to Director
-grant select on n1_WebinarsFinancialReport to Director
-grant select on n1_MeetingsNoStudiesFinancialReport to Director
-grant select on n_1_StudiesFinancialReport to Director
-grant select on n_RaportDłużnikówCourses to Director
-grant select on n_RaportDłużnikówStudies to Director
-grant select on n_RaportDłużnikówWebinars to Director
-grant select on n_RaportDłużnikówStudyMeetingsNieStudium to Director
+grant select on FinanceReportCourses365 to Director
+grant select on FinanceReportStudies365 to Director
+grant select on FinanceReportWebinars365 to Director
+grant select on FinanceReportStudyMeetingsNoStudies365 to Director
+grant select on n_1_CoursesDebtorReport to Director
+grant select on n_1_MeetingsStudiesDebtorReport to Director
+grant select on n_1_StudiesDebtorReport to Director
+grant select on n_1_WebinarsDebtorReport to Director
 ```
 
 U nas tak naprawdę nie potrzeba wiele indeksów, ponieważ indeksy klastrowe na klucze główne są ustawiane automatycznie i one u nas mają sens, ponieważ rzadko sortujemy i wyszukujemy w naszych raportach i procedurach po kolumnach innych niż klucze główne, ale mamy dwóch innych kandydatów:
