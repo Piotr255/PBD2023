@@ -897,7 +897,7 @@ GO
 
 ## Raporty dłużników
 
-Dłużnikiem jest osoba, która dany produkt zamówiła, nie spełnia odpowiednich dla danego typu nauki terminów płatności, nie ma odroczenia płatności.
+Dłużnikiem jest osoba, która dany produkt zamówiła, nie spełnia odpowiednich dla danego typu nauki terminów płatności, nie ma odroczenia płatności. Dla kursów i spotkań studyjnych to 3 dni przed. Webinar można nawet opłacić bezpośrednio przed rozpoczęciem.
 
 ## Raport dłużników Courses
 ```sql
@@ -1028,110 +1028,231 @@ GROUP BY dbo.Webinars.Name, dbo.OrderedWebinars.WebinarID, dbo.Webinars.StartDat
 
 ## Raporty Finansowe
 Raporty są tworzone w następujące sposób, patrzymy do odpowiadających tabel ordered. Następnie łącząc z tabelą odpowiadającą typowi nauczania, grupujemy po ID i podajemy kwoty.
-Dodatkowo sprawdzamy czy produkt został już zamówiony (nie jest w koszyku) i został opłacony. Każdy raport uwzględnia wyniki finansowe z ostatniego roku.
+Dodatkowo sprawdzamy czy produkt został już zamówiony (nie jest w koszyku) i został opłacony.  Każdy raport dla przykładu uwzględnia wyniki finansowe z ostatniego roku.
+Widoki korzystają z funkcji, do której można wpisać liczbę dni z jakiś interesuje nas raport.
 
 
 ## Raport finansowy Courses
 ```sql
 
-CREATE VIEW [dbo].[n_1_CoursesFinancialReport]
+CREATE FUNCTION [dbo].[FinanceCourseReportFunction] (@Days INT)
+RETURNS TABLE
 AS
-WITH t1 AS (SELECT dbo.Courses.CourseID, COUNT(*) * dbo.Courses.Price AS moneyMade, dbo.Courses.Price, COUNT(*) AS quantity
-                   FROM    dbo.Orders INNER JOIN
-                                 dbo.OrderedCourses ON dbo.Orders.OrderID = dbo.OrderedCourses.OrderID RIGHT OUTER JOIN
-                                 dbo.Courses ON dbo.OrderedCourses.CourseID = dbo.Courses.CourseID
-                   WHERE (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedCourses.HasBeenPaidFor = 1) AND (DATEDIFF(DAY, dbo.OrderedCourses.PaymentDate, GETDATE()) <= 365)
-                   GROUP BY dbo.Courses.CourseID, dbo.Courses.Price)
-    SELECT Courses_1.CourseID, Courses_1.Name, Courses_1.Price AS priceForCourse, ISNULL(t1_1.quantity, 0) AS quantity, ISNULL(t1_1.moneyMade, 0) AS CoursesIncome
-   FROM    dbo.Courses AS Courses_1 LEFT OUTER JOIN
-                t1 AS t1_1 ON t1_1.CourseID = Courses_1.CourseID
+RETURN
+(
+    WITH t1 AS (
+        SELECT 
+            dbo.Courses.CourseID, 
+            COUNT(*) * dbo.Courses.Price AS moneyMade, 
+            dbo.Courses.Price, 
+            COUNT(*) AS quantity
+        FROM    
+            dbo.Orders 
+            INNER JOIN dbo.OrderedCourses ON dbo.Orders.OrderID = dbo.OrderedCourses.OrderID 
+            RIGHT OUTER JOIN dbo.Courses ON dbo.OrderedCourses.CourseID = dbo.Courses.CourseID
+        WHERE 
+            (dbo.Orders.Status = 'Delivered') 
+            AND (dbo.OrderedCourses.HasBeenPaidFor = 1) 
+            AND (DATEDIFF(DAY, dbo.OrderedCourses.PaymentDate, GETDATE()) <= @Days)
+        GROUP BY 
+            dbo.Courses.CourseID, 
+            dbo.Courses.Price
+    )
+    SELECT 
+        Courses_1.CourseID, 
+        Courses_1.Name, 
+        Courses_1.Price AS priceForCourse, 
+        ISNULL(t1.quantity, 0) AS quantity, 
+        ISNULL(t1.moneyMade, 0) AS CoursesIncome
+    FROM 
+        dbo.Courses AS Courses_1 
+        LEFT OUTER JOIN t1 ON Courses_1.CourseID = t1.CourseID
+)
 ```
-<img src="Reportexamples/n1_WebinarsFinancialReport_example.png">
+
+```sql
+CREATE VIEW [dbo].[FinanceReportCourses365]
+AS
+SELECT CourseID, Name, priceForCourse, quantity, CoursesIncome
+FROM   dbo.FinanceCourseReportFunction(365) AS FinanceCourseReportFunction_1
+```
+<img src="Reportexamples/n1_CoursesFinancialReport_example.png">
 
 ## Raport finansowy Studies
 ```sql
-CREATE view [dbo].[n_1_StudiesFinancialReport] as
-    WITH t1 AS (SELECT dbo.StudyMeetings.StudyMeetingID,
-                       COUNT(*) * dbo.StudyMeetings.MeetingPriceForStudents AS zarobionasuma
-                FROM dbo.Orders
-                         INNER JOIN
-                     dbo.OrderedStudyMeetings ON dbo.Orders.OrderID = dbo.OrderedStudyMeetings.OrderID
-                         RIGHT OUTER JOIN
-                     dbo.StudyMeetings ON dbo.OrderedStudyMeetings.StudyMeetingID = dbo.StudyMeetings.StudyMeetingID
-                WHERE (dbo.Orders.Status = 'Delivered')
-                  AND (dbo.OrderedStudyMeetings.HasBeenPaidFor = 1)
-                  AND (dbo.OrderedStudyMeetings.IsPartOfStudies = 1)
-                  AND (DATEDIFF(DAY, PaymentDate, GETDATE()) <= 365)
-                GROUP BY dbo.StudyMeetings.StudyMeetingID, dbo.StudyMeetings.MeetingPriceForStudents),
-         t2 AS
-             (SELECT StudyMeetings_1.StudyID        AS idstudiow,
-                     StudyMeetings_1.StudyMeetingID AS idspotkania,
-                     ISNULL(t1_1.zarobionasuma, 0)  AS zarobionasuma
-              FROM dbo.StudyMeetings AS StudyMeetings_1
-                       LEFT OUTER JOIN
-                   t1 AS t1_1 ON t1_1.StudyMeetingID = StudyMeetings_1.StudyMeetingID),
-         t3 AS
-             (SELECT idstudiow, SUM(zarobionasuma) AS zarobionasuma
-              FROM t2 AS t2_1
-              GROUP BY idstudiow),
-         t4 AS
-             (SELECT dbo.OrderedStudies.StudyID AS idstudiow, COUNT(dbo.OrderedStudies.EntryFeePaid) AS liczbaoplacenfee
-              FROM dbo.OrderedStudies
-                       INNER JOIN
-                   dbo.Orders AS Orders_1 ON dbo.OrderedStudies.OrderID = Orders_1.OrderID
-              WHERE (Orders_1.Status = 'Delivered')
-                AND (dbo.OrderedStudies.EntryFeePaid = 1)
-                AND (DATEDIFF(DAY, PaymentDate, GETDATE()) <= 365)
-              GROUP BY dbo.OrderedStudies.StudyID),
-         t5 AS
-             (SELECT dbo.Studies.StudyID,
-                     Studies.FieldOfStudy                                    as name,
-                     ISNULL(t4_1.liczbaoplacenfee * dbo.Studies.EntryFee, 0) AS zarobekzentryfee
-              FROM dbo.Studies
-                       LEFT OUTER JOIN
-                   t4 AS t4_1 ON dbo.Studies.StudyID = t4_1.idstudiow)
-    SELECT t5_1.StudyID,
-           t5_1.name,
-           t3_1.zarobionasuma                         as meetingsMoney,
-           t5_1.zarobekzentryfee                      as entryFeeMoney,
-           t3_1.zarobionasuma + t5_1.zarobekzentryfee AS studySum
-    FROM t5 AS t5_1
-             LEFT OUTER JOIN
-         t3 AS t3_1 ON t5_1.StudyID = t3_1.idstudiow
+
+CREATE FUNCTION [dbo].[FinanceStudiesReportFunction] (@Days INT)
+RETURNS TABLE
+AS
+RETURN
+(
+    WITH t1 AS (
+        SELECT 
+            dbo.StudyMeetings.StudyMeetingID, 
+            COUNT(*) * dbo.StudyMeetings.MeetingPriceForStudents AS zarobionasuma
+        FROM    
+            dbo.Orders 
+            INNER JOIN dbo.OrderedStudyMeetings ON dbo.Orders.OrderID = dbo.OrderedStudyMeetings.OrderID 
+            RIGHT OUTER JOIN dbo.StudyMeetings ON dbo.OrderedStudyMeetings.StudyMeetingID = dbo.StudyMeetings.StudyMeetingID
+        WHERE 
+            (dbo.Orders.Status = 'Delivered') 
+            AND (dbo.OrderedStudyMeetings.HasBeenPaidFor = 1) 
+            AND (dbo.OrderedStudyMeetings.IsPartOfStudies = 1) 
+            AND (DATEDIFF(DAY, dbo.OrderedStudyMeetings.PaymentDate, GETDATE()) <= @Days)
+        GROUP BY 
+            dbo.StudyMeetings.StudyMeetingID, 
+            dbo.StudyMeetings.MeetingPriceForStudents
+    ), 
+    t2 AS (
+        SELECT 
+            StudyMeetings_1.StudyID AS idstudiow, 
+            StudyMeetings_1.StudyMeetingID AS idspotkania, 
+            ISNULL(t1.zarobionasuma, 0) AS zarobionasuma
+        FROM    
+            dbo.StudyMeetings AS StudyMeetings_1 
+            LEFT OUTER JOIN t1 ON t1.StudyMeetingID = StudyMeetings_1.StudyMeetingID
+    ), 
+    t3 AS (
+        SELECT 
+            idstudiow, 
+            SUM(zarobionasuma) AS zarobionasuma
+        FROM    
+            t2
+        GROUP BY idstudiow
+    ), 
+    t4 AS (
+        SELECT 
+            dbo.OrderedStudies.StudyID AS idstudiow, 
+            COUNT(dbo.OrderedStudies.EntryFeePaid) AS liczbaoplacenfee
+        FROM    
+            dbo.OrderedStudies 
+            INNER JOIN dbo.Orders AS Orders_1 ON dbo.OrderedStudies.OrderID = Orders_1.OrderID
+        WHERE 
+            (Orders_1.Status = 'Delivered') 
+            AND (dbo.OrderedStudies.EntryFeePaid = 1) 
+            AND (DATEDIFF(DAY, dbo.OrderedStudies.PaymentDate, GETDATE()) <= @Days)
+        GROUP BY 
+            dbo.OrderedStudies.StudyID
+    ), 
+    t5 AS (
+        SELECT 
+            dbo.Studies.StudyID, 
+            dbo.Studies.FieldOfStudy AS name, 
+            ISNULL(t4.liczbaoplacenfee * dbo.Studies.EntryFee, 0) AS zarobekzentryfee
+        FROM    
+            dbo.Studies 
+            LEFT OUTER JOIN t4 ON dbo.Studies.StudyID = t4.idstudiow
+    )
+    SELECT 
+        t5.StudyID, 
+        t5.name, 
+        ISNULL(t3.zarobionasuma, 0) AS meetingsMoney, 
+        t5.zarobekzentryfee AS entryFeeMoney, 
+        ISNULL(t3.zarobionasuma, 0) + t5.zarobekzentryfee AS studySum
+    FROM    
+        t5 
+        LEFT OUTER JOIN t3 ON t5.StudyID = t3.idstudiow
+)
+```
+
+```sql
+CREATE VIEW [dbo].[FinanceReportStudies365]
+AS
+SELECT StudyID, name, meetingsMoney, entryFeeMoney, studySum
+FROM   dbo.FinanceStudiesReportFunction(365) AS FinanceStudiesReportFunction_1
 ```
 <img src="Reportexamples/n_1_StudiesFinancialReport_example.png">
 
 ## Raport finansowy StudyMeetings poza studium
 ```sql
 
-CREATE VIEW [dbo].[n_1_MeetingsNoStudiesFinancialReport]
+CREATE FUNCTION [dbo].[FinanceStudyMeetingsNoStudyFunction] (@Days INT)
+RETURNS TABLE
 AS
-WITH t1 AS (SELECT dbo.StudyMeetings.StudyMeetingID, COUNT(*) * dbo.StudyMeetings.MeetingPrice AS moneyMade, COUNT(*) AS quantity
-                   FROM    dbo.Orders INNER JOIN
-                                 dbo.OrderedStudyMeetings ON dbo.Orders.OrderID = dbo.OrderedStudyMeetings.OrderID RIGHT OUTER JOIN
-                                 dbo.StudyMeetings ON dbo.OrderedStudyMeetings.StudyMeetingID = dbo.StudyMeetings.StudyMeetingID
-                   WHERE (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedStudyMeetings.HasBeenPaidFor = 1) AND (dbo.OrderedStudyMeetings.IsPartOfStudies = 0) AND (DATEDIFF(DAY, dbo.OrderedStudyMeetings.PaymentDate, GETDATE()) <= 365)
-                   GROUP BY dbo.StudyMeetings.StudyMeetingID, dbo.StudyMeetings.MeetingPrice)
-    SELECT StudyMeetings_1.StudyMeetingID, StudyMeetings_1.MeetingName, StudyMeetings_1.MeetingPrice AS priceForMeeting, ISNULL(t1_1.quantity, 0) AS quantity, ISNULL(t1_1.moneyMade, 0) AS StudyMeetingsIncome
-   FROM    dbo.StudyMeetings AS StudyMeetings_1 LEFT OUTER JOIN
-                t1 AS t1_1 ON t1_1.StudyMeetingID = StudyMeetings_1.StudyMeetingID
+RETURN
+(
+    WITH t1 AS (
+        SELECT 
+            dbo.StudyMeetings.StudyMeetingID, 
+            COUNT(*) * dbo.StudyMeetings.MeetingPrice AS moneyMade, 
+            COUNT(*) AS quantity
+        FROM    
+            dbo.Orders 
+            INNER JOIN dbo.OrderedStudyMeetings ON dbo.Orders.OrderID = dbo.OrderedStudyMeetings.OrderID 
+            RIGHT OUTER JOIN dbo.StudyMeetings ON dbo.OrderedStudyMeetings.StudyMeetingID = dbo.StudyMeetings.StudyMeetingID
+        WHERE 
+            (dbo.Orders.Status = 'Delivered') 
+            AND (dbo.OrderedStudyMeetings.HasBeenPaidFor = 1) 
+            AND (dbo.OrderedStudyMeetings.IsPartOfStudies = 0) 
+            AND (DATEDIFF(DAY, dbo.OrderedStudyMeetings.PaymentDate, GETDATE()) <= @Days)
+        GROUP BY 
+            dbo.StudyMeetings.StudyMeetingID, 
+            dbo.StudyMeetings.MeetingPrice
+    )
+    SELECT 
+        StudyMeetings_1.StudyMeetingID, 
+        StudyMeetings_1.MeetingName, 
+        StudyMeetings_1.MeetingPrice AS priceForMeeting, 
+        ISNULL(t1.quantity, 0) AS quantity, 
+        ISNULL(t1.moneyMade, 0) AS StudyMeetingsIncome
+    FROM 
+        dbo.StudyMeetings AS StudyMeetings_1 
+        LEFT OUTER JOIN t1 ON t1.StudyMeetingID = StudyMeetings_1.StudyMeetingID
+)
+```
+
+```sql
+CREATE VIEW [dbo].[FinanceReportStudyMeetingsNoStudies365]
+AS
+SELECT StudyMeetingID, MeetingName, priceForMeeting, quantity, StudyMeetingsIncome
+FROM   dbo.FinanceStudyMeetingsNoStudyFunction(365) AS FinanceStudyMeetingsNoStudyFunction_1
 ```
 <img src="Reportexamples/n1_MeetingsNoStudiesFinancialReport_example.png">
 
 ## Raport finansowy Webinars
 ```sql
-CREATE VIEW [dbo].[n_1_WebinarsFinancialReport]
+CREATE FUNCTION [dbo].[FinanceWebinarsReportFunction] (@Days INT)
+RETURNS TABLE
 AS
-WITH t1 AS (SELECT dbo.Webinars.WebinarID, COUNT(*) * dbo.Webinars.Price AS moneyMade, dbo.Webinars.Price AS price, COUNT(*) AS quantity
-                   FROM    dbo.Orders INNER JOIN
-                                 dbo.OrderedWebinars ON dbo.Orders.OrderID = dbo.OrderedWebinars.OrderID RIGHT OUTER JOIN
-                                 dbo.Webinars ON dbo.OrderedWebinars.WebinarID = dbo.Webinars.WebinarID
-                   WHERE (dbo.Orders.Status = 'Delivered') AND (dbo.OrderedWebinars.HasBeenPaidFor = 1) AND (DATEDIFF(DAY, dbo.OrderedWebinars.PaymentDate, GETDATE()) <= 365)
-                   GROUP BY dbo.Webinars.WebinarID, dbo.Webinars.Price)
-    SELECT TOP (100) PERCENT Webinars_1.WebinarID, Webinars_1.Name, Webinars_1.Price AS priceforwebinar, ISNULL(t1_1.quantity, 0) AS quantity, ISNULL(t1_1.moneyMade, 0) AS webinarsIncome
-   FROM    dbo.Webinars AS Webinars_1 LEFT OUTER JOIN
-                t1 AS t1_1 ON t1_1.WebinarID = Webinars_1.WebinarID
+RETURN
+(
+    WITH t1 AS (
+        SELECT 
+            dbo.Webinars.WebinarID, 
+            COUNT(*) * dbo.Webinars.Price AS moneyMade, 
+            dbo.Webinars.Price AS price, 
+            COUNT(*) AS quantity
+        FROM    
+            dbo.Orders 
+            INNER JOIN dbo.OrderedWebinars ON dbo.Orders.OrderID = dbo.OrderedWebinars.OrderID 
+            RIGHT OUTER JOIN dbo.Webinars ON dbo.OrderedWebinars.WebinarID = dbo.Webinars.WebinarID
+        WHERE 
+            (dbo.Orders.Status = 'Delivered') 
+            AND (dbo.OrderedWebinars.HasBeenPaidFor = 1) 
+            AND (DATEDIFF(DAY, dbo.OrderedWebinars.PaymentDate, GETDATE()) <= @Days)
+        GROUP BY 
+            dbo.Webinars.WebinarID, 
+            dbo.Webinars.Price
+    )
+    SELECT 
+        Webinars_1.WebinarID, 
+        Webinars_1.Name, 
+        Webinars_1.Price AS priceforwebinar, 
+        ISNULL(t1.quantity, 0) AS quantity, 
+        ISNULL(t1.moneyMade, 0) AS webinarsIncome
+    FROM 
+        dbo.Webinars AS Webinars_1 
+        LEFT OUTER JOIN t1 ON Webinars_1.WebinarID = t1.WebinarID
+)
 ```
+
+```sql
+CREATE VIEW [dbo].[FinanceReportWebinars365]
+AS
+SELECT WebinarID, Name, priceforwebinar, quantity, webinarsIncome
+FROM   dbo.FinanceWebinarsReportFunction(365) AS FinanceWebinarsReportFunction_1
+```
+
 <img src="Reportexamples/n1_WebinarsFinancialReport_example.png">
 
 ## Raporty frekwencji
