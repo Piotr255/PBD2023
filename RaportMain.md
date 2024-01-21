@@ -154,7 +154,6 @@ CREATE TABLE [dbo].[Courses](
 	[Price] [money] NOT NULL,
 	[StartDate] [datetime] NOT NULL,
 	[Duration] [int] NOT NULL,
-	[ModulesCount] [int] NOT NULL,
 	[Limit] [int] NOT NULL,
 	[LanguageID] [int] NOT NULL,
 	[TranslatorName] [nvarchar](50) NULL,
@@ -190,12 +189,6 @@ ALTER TABLE [dbo].[Courses]  WITH CHECK ADD  CONSTRAINT [Limit] CHECK  (([Limit]
 GO
 
 ALTER TABLE [dbo].[Courses] CHECK CONSTRAINT [Limit]
-GO
-
-ALTER TABLE [dbo].[Courses]  WITH CHECK ADD  CONSTRAINT [ModulesCount] CHECK  (([ModulesCount]>(0)))
-GO
-
-ALTER TABLE [dbo].[Courses] CHECK CONSTRAINT [ModulesCount]
 GO
 
 ALTER TABLE [dbo].[Courses]  WITH CHECK ADD  CONSTRAINT [Name] CHECK  (([Name]<>''))
@@ -247,7 +240,7 @@ GO
 ALTER TABLE [dbo].[CoursesModules] CHECK CONSTRAINT [FK_CoursesModules_Teachers]
 GO
 
-ALTER TABLE [dbo].[CoursesModules]  WITH CHECK ADD  CONSTRAINT [Type] CHECK  (([Type]='Online Asynchroniczny' OR [Type]='Online Synchroniczny' OR [Type]='Stacjonarny' OR [Type]='Hybrydowy'))
+ALTER TABLE [dbo].[CoursesModules]  WITH CHECK ADD  CONSTRAINT [Type] CHECK  (([Type]='OA' OR [Type]='OS' OR [Type]='ST' OR [Type]='HY'))
 GO
 
 ALTER TABLE [dbo].[CoursesModules] CHECK CONSTRAINT [Type]
@@ -702,12 +695,6 @@ REFERENCES [dbo].[Teachers] ([TeacherID])
 GO
 
 ALTER TABLE [dbo].[StudyMeetings] CHECK CONSTRAINT [FK_StudyMeetings_Teachers]
-GO
-
-ALTER TABLE [dbo].[StudyMeetings]  WITH CHECK ADD  CONSTRAINT [SM_Duration] CHECK  (([Duration]='01:30' OR [Duration]='00:45'))
-GO
-
-ALTER TABLE [dbo].[StudyMeetings] CHECK CONSTRAINT [SM_Duration]
 GO
 
 ALTER TABLE [dbo].[StudyMeetings]  WITH CHECK ADD  CONSTRAINT [SM_MeetingPrice] CHECK  (([MeetingPrice]>(0) AND [MeetingPriceForStudents]>(0)))
@@ -1280,6 +1267,7 @@ Procedura polega na dodaniu kursu do koszyka. Na poziomie bazy danych dodaje ona
 OrderedCourses pełni tutaj rolę takiego Order Details(jednemu zamówieniu w tabeli
 Orders może odpowiadać kilka produltów w tabelach OrderedCourses, OrderedStudies, OrderedStudyMeetings, OrderedWebinars). Połączone są one z tabelą Orders przez OrderID. Po dodaniu pierwszego produktu do koszyka, generowany jest link do płatności i wstawiany do tabeli Orders dla odpowiedniego zamówienia.
 Walidacja przy dodawaniu produktu do koszyka(w tym wypadku kursu) polega na sprawdzeniu, czy nie został przekroczony limit uczestników, czy są jeszcze 3 dni przed rozpoczęciem kursu, czy dany student i dany kurs istnieją oraz przy tworzeniu koszyka, czy przypadkiem nie został on już stworzony. Podobnie działają poniższe procedury AddStudyMeetingToBasket, AddStudyToBasket, AddWebinarToBasket.
+Dodałem jeszcze sprawdzenie, czy dany student nie ma już zamówionego przypadkiem danego kursu, zjazdu lub studium oraz czy nie ma już w koszyku danego webinara(w przypadku webinara student może chcieć przedłużyć okres jego posiadania)
 
 <img src="img/AddToBasket1.png">
 Na tym przykładowym zrzucie ekranu z tabeli Orders kolejne kolumny to:
@@ -1318,6 +1306,11 @@ BEGIN TRY
 	IF NOT EXISTS (SELECT 1 FROM Courses WHERE CourseID = @CourseID) OR 
 		NOT EXISTS (select 1 from Students where StudentID=@StudentID)
 		THROW 50002,'Nie istnieje Kurs albo Student o takim ID',1;
+	-- weryfikujemy, czy dany student nie ma już zamówionego tego kursu
+	IF EXISTS (SELECT 1 FROM OrderedCourses 
+				JOIN Orders on OrderedCourses.OrderID=Orders.OrderID
+				WHERE StudentID=@StudentID AND CourseID=@CourseID)
+		THROW 50004, 'Ten kurs znajduje sie juz na liscie twoich produktow',1;
 	-- weryfikujemy, czy zamówienie tego kursu nie spowodowałoby przekroczenia limitu uczestników danego kursu
 	DECLARE @limit_exceeded bit = 0;
 	DECLARE @max_limit int;
@@ -1339,12 +1332,12 @@ BEGIN TRY
 					FROM 
 					Courses
 					WHERE CourseID=@CourseID;
-
+	
 	IF (@date_ok=0)
 	BEGIN
 		THROW 50003,'Za późno na kupienie tego kursu',1;
 	END;
-
+	
 	DECLARE @order_exists bit = 0;
 	SET @order_exists = dbo.DoesOrderExist(@OrderID);
 	IF (@order_exists=0)
@@ -1379,7 +1372,11 @@ BEGIN TRY
 	IF (NOT EXISTS (select 1 from StudyMeetings where StudyMeetingID=@StudyMeetingID )) OR
 		(NOT EXISTS (select 1 from Students where StudentID=@StudentID))
 		THROW 50001,'Nie istnieje Zjazd albo Student o takim ID',1;
-
+	-- weryfikujemy, czy dany student nie ma już zamówionego tego zjazdu
+	IF EXISTS (SELECT 1 FROM OrderedStudyMeetings 
+				JOIN Orders on OrderedStudyMeetings.OrderID=Orders.OrderID
+				WHERE StudentID=@StudentID AND StudyMeetingID=@StudyMeetingID)
+		THROW 50004, 'Ten zjazd znajduje sie juz na liscie twoich produktow',1;
 	DECLARE @limit_exceeded bit;
 	DECLARE @max_limit int;
 	SELECT @max_limit = SeatCount FROM StudyMeetings WHERE StudyMeetingID=@StudyMeetingID;
@@ -1397,16 +1394,16 @@ BEGIN TRY
 	DECLARE @date_ok bit; -- weryfikujemy, czy na pewno nadal można kupić studium(trzeba dokonać wpłaty na 3 dni przed 
 	-- rozpoczęciem)
 	SELECT @date_ok = CASE 
-						WHEN DATEDIFF(second, BeginningDate, GETDATE()) > 259200 THEN 1 -- 259200s = 72h = 3 dni
+						WHEN DATEDIFF(second, GETDATE(), BeginningDate) > 259200 THEN 1 -- 259200s = 72h = 3 dni
 						ELSE 0
 						END
 					FROM 
 					StudyMeetings
 					WHERE StudyMeetingID=@StudyMeetingID;
-
+	
 	IF (@date_ok=0)
 	BEGIN
-		THROW 50001,'Za późno na kupienie tego kursu',1;
+		THROW 50001,'Za późno na kupienie tego zjazdu',1;
 	END;
 	
 	-- sprawdzamy, czy koszyk już istnieje, jeśli nie, tworzymy go
@@ -1441,8 +1438,12 @@ BEGIN
 BEGIN TRY
 	IF (NOT EXISTS (select 1 from Studies where StudyID=@StudyID)) OR
 		(NOT EXISTS (select 1 from Students where StudentID=@StudentID))
-		THROW 50001,'Nie istnieje Studium albo Student o takim ID',1;
-
+		THROW 50002,'Nie istnieje Studium albo Student o takim ID',1;
+	-- weryfikujemy, czy dany student nie ma już zamówionego tego studium
+	IF EXISTS (SELECT 1 FROM OrderedStudies 
+				JOIN Orders on OrderedStudies.OrderID=Orders.OrderID
+				WHERE StudentID=@StudentID AND StudyID=@StudyID)
+		THROW 50004, 'Te studium znajduje sie juz na liscie twoich produktow',1;
 	DECLARE @limit_exceeded bit;
 	DECLARE @max_limit int;
 	SELECT @max_limit = Limit FROM Studies WHERE StudyID=@StudyID;
@@ -1491,6 +1492,13 @@ BEGIN TRY
 	IF (EXISTS (select 1 from Webinars where WebinarID=@WebinarID)) AND 
 		(EXISTS (select 1 from Students where StudentID=@StudentID))
 	BEGIN
+	-- w przypadku webinaru sprawdzam tylko, czy dany webinar nie znajduje sie juz w aktualnym koszyku danego 
+	-- studenta, a nie czy w ogole go zamowil, bo student moze chciec przedluzyc okres posiadania danego 
+	-- webinaru
+		IF EXISTS (select 1 from Orders
+				JOIN OrderedWebinars on Orders.OrderID=OrderedWebinars.OrderID
+				WHERE Orders.OrderID=@OrderID AND WebinarID=@WebinarID AND StudentID=@StudentID)
+			THROW 50002, 'Ten webinar znajduje sie juz w Twoim koszyku', 1;
 		DECLARE @order_exists bit = 0;
 		SET @order_exists = dbo.DoesOrderExist(@OrderID);
 		IF (@order_exists=0)
@@ -1615,7 +1623,8 @@ Po prostu ustawia ona wartość w odpowiednim rekordzie kolumny HasBeenCaughtUp(
 ALTER PROCEDURE [dbo].[RegisterCaughtUpStudyMeetingAbsence]
 	-- Add the parameters for the stored procedure here
 	@study_meeting_id int,
-	@student_id int
+	@student_id int,
+	@is_caught_up bit
 AS
 BEGIN
 	-- SET NOCOUNT ON added to prevent extra result sets from
@@ -1625,7 +1634,7 @@ BEGIN
     -- Insert statements for procedure here
 	IF (exists (select 1 from StudyMeetingsAbsences where StudentID=@student_id and StudyMeetingID=@study_meeting_id))
 		UPDATE StudyMeetingsAbsences 
-		SET HasBeenCaughtUp=1 
+		SET HasBeenCaughtUp=@is_caught_up 
 		where StudentID=@student_id and StudyMeetingID=@study_meeting_id;
 	ELSE
 		RAISERROR ('Student nie zakupil tego zjazdu',16,1);
@@ -2171,3 +2180,12 @@ grant select on n_RaportDłużnikówStudies to Director
 grant select on n_RaportDłużnikówWebinars to Director
 grant select on n_RaportDłużnikówStudyMeetingsNieStudium to Director
 ```
+
+U nas tak naprawdę nie potrzeba wiele indeksów, ponieważ indeksy klastrowe na klucze główne są ustawiane automatycznie i one u nas mają sens, ponieważ rzadko sortujemy i wyszukujemy w naszych raportach i procedurach po kolumnach innych niż klucze główne, ale mamy dwóch innych kandydatów:
+```sql
+create index StudyMeetings_StudyID on StudyMeetings(StudyID)
+create index Orders_StudentID on Orders(StudentID)
+```
+
+Za pomocą pierwszego możemy sprawdzić, do jakiego studium należy dany zjazd. To się może przydać przy znalezieniu wszystkich zjazdów należących do danego studium, przy sprawdzeniu do jakiego studium należy dany zjazd, itp. 
+Z drugiego często korzystamy w procedurach w warunkach WHERE, sprawdzamy np. czy dany student posiada dany produkt, itp.
