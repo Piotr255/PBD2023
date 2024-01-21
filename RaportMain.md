@@ -1,4 +1,4 @@
-pbd_<14>_raport5 | Piotr Albiński, Adam Konior, Mateusz Maciaszczyk
+pbd_<14>_raport_knc | Piotr Albiński, Adam Konior, Mateusz Maciaszczyk
 
 ## Identyfikacja użytkowników:
 - pracownik biura obsługi dydaktyki:
